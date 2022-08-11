@@ -2,23 +2,34 @@ import json
 from uuid import uuid4
 
 from dagster import op, get_dagster_logger, job, Field, DynamicOut, DynamicOutput
+from django.utils import timezone
 from kafka import KafkaConsumer, TopicPartition
 
-from intelhandler.models import Indicator
+from intelhandler.models import Statistic
 
 
-def exist_indicator(indicator):
-    pass
+def exist_indicator(indicator, data: dict):
+    from intelhandler.models import Indicator
+    indicator: Indicator
+    indicator.detected += 1
+    indicator.last_detected_date = timezone.now()
+
+    indicator.save()
+    Statistic.objects.create(data=data)
 
 
 def not_exist_indicator(data):
-    # todo find by that
+    from intelhandler.models import Indicator
+
     value = data.get('indicator')
     Indicator.objects.get_or_create(name=value, defaults={
         "uuid": uuid4(),
         "supplier_name": data.get('supplier_name', value),
         "supplier_confidence": data.get('confidence', value),
-        "weight": data.get('confidence', value)
+        "weight": data.get('confidence', value),
+        "detected": 1,
+        "first_detected_date": timezone.now(),
+        "last_detected_date": timezone.now()
     })
 
 
@@ -28,7 +39,7 @@ def event_worker(data: dict):
     # todo find by that
     indicator_obj = Indicator.objects.filter(name=indicator).first()
     if indicator_obj is not None:
-        exist_indicator(indicator)
+        exist_indicator(indicator, data)
     else:
         not_exist_indicator(indicator)
 

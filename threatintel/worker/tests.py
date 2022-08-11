@@ -1,22 +1,25 @@
-import json
 import random
-from typing import List
 
-from kafka import KafkaProducer
-
-from intelhandler.constants import STIX
 from worker.utils import django_init
 
 django_init()
-from django.conf import settings
-from intelhandler.script import parse_stix, parse_misp, parse_free_text, parse_csv
-from intelhandler.models import Feed, Indicator, Source
-from intelhandler.serializers import IndicatorWithFeedsSerializer
+from worker.cron_module import cron_init
 
+from intelhandler.script import parse_stix, parse_misp, parse_free_text, parse_csv
+from intelhandler.models import Feed, Source
 
 if __name__ == '__main__':
     django_init()
-    print(Feed.get_model_fields())
+
+    def a():
+        print('test done good')
+
+    # a = lambda:print("test done good")
+    s:Source = Source.objects.first()
+    s.update_time_period=3000
+
+    cron_init(a,s)
+    # print(Feed.get_model_fields())
 
 
     # Source.objects.all().delete()

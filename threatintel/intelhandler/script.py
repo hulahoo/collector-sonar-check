@@ -148,7 +148,7 @@ def parse_csv(feed, raw_indicators=None, config: dict = {}) -> list:
             dialect=config.get('dialect', "excel"),
     ):
         indicator, created = Indicator.objects.get_or_create(value=row.get(feed.custom_field), defaults={
-            "uuid": uuid4,
+            "uuid": uuid4(),
             "supplier_name": feed.vendor,
             "supplier_confidence": feed.confidence,
             "weight": feed.confidence
