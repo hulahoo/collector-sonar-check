@@ -8,8 +8,6 @@ services:
       POSTGRES_USER: "postgres_user"
       POSTGRES_PASSWORD: "postgres_password"
       POSTGRES_DB: "postgres_db"
-    networks:
-      - docker_example_network
 
   docker_example_dagit:
     build:
@@ -37,11 +35,8 @@ services:
     volumes: # Make docker client accessible so we can terminate containers from dagit
       - /var/run/docker.sock:/var/run/docker.sock
       - /tmp/io_manager_storage:/tmp/io_manager_storage
-    networks:
-      - docker_example_network
     depends_on:
       - docker_example_postgresql
-      - docker_example_user_code
 
   # This service runs the dagster-daemon process, which is responsible for taking runs
   # off of the queue and launching them, as well as creating runs from schedules or sensors.
@@ -65,7 +60,6 @@ services:
       - docker_example_network
     depends_on:
       - docker_example_postgresql
-      - docker_example_user_code
 
 networks:
   docker_example_network:
