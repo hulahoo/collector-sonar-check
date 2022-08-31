@@ -3,7 +3,6 @@ import random
 from worker.utils import django_init
 
 django_init()
-from worker.cron_module import cron_init
 
 from intelhandler.script import parse_stix, parse_misp, parse_free_text, parse_csv
 from intelhandler.models import Feed, Source
@@ -18,7 +17,6 @@ if __name__ == '__main__':
     s:Source = Source.objects.first()
     s.update_time_period=3000
 
-    cron_init(a,s)
     # print(Feed.get_model_fields())
 
 

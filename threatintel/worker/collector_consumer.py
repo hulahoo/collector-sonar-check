@@ -5,21 +5,21 @@ from dagster import op, get_dagster_logger, job, Field, DynamicOut, DynamicOutpu
 from django.utils import timezone
 from kafka import KafkaConsumer, TopicPartition
 
-from intelhandler.models import Statistic
 
-
-def exist_indicator(indicator, data: dict):
-    from intelhandler.models import Indicator
+def exist_indicator(indicator, data: dict, config):
+    from intelhandler.models import Indicator, Statistic
     indicator: Indicator
     indicator.detected += 1
     indicator.last_detected_date = timezone.now()
 
     indicator.save()
+    data['config'] = config
+
     Statistic.objects.create(data=data)
 
 
-def not_exist_indicator(data):
-    from intelhandler.models import Indicator
+def not_exist_indicator(data, config):
+    from intelhandler.models import Indicator, Statistic
 
     value = data.get('indicator')
     Indicator.objects.get_or_create(name=value, defaults={
@@ -32,6 +32,9 @@ def not_exist_indicator(data):
         "last_detected_date": timezone.now()
     })
 
+    data['config'] = config
+    Statistic.objects.create(data=data)
+
 
 def event_worker(data: dict):
     from intelhandler.models import Indicator
@@ -39,9 +42,9 @@ def event_worker(data: dict):
     # todo find by that
     indicator_obj = Indicator.objects.filter(name=indicator).first()
     if indicator_obj is not None:
-        exist_indicator(indicator, data)
+        exist_indicator(indicator, data, config)
     else:
-        not_exist_indicator(indicator)
+        not_exist_indicator(indicator, config)
 
 
 @op(config_schema={'partitions': Field(list)}, out=DynamicOut())
@@ -55,8 +58,10 @@ def consumer_dispatcher_op(context):
         )
 
 
-@op
+@op(config_schema={"config": Field(dict)})
 def op_consumer(context, partition: int):
+    config = context.op_config['config']
+
     from worker.utils import django_init
     django_init()
     from django.conf import settings
@@ -78,7 +83,7 @@ def op_consumer(context, partition: int):
             for message in messages:
                 data = json.loads(message.value)
                 logger.info(f'{data}')
-                event_worker(data)
+                event_worker(data, config)
 
 
 @op
