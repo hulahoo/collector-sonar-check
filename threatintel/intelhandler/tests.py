@@ -83,6 +83,7 @@ class SyslogTestCase(TestCase):
         self.handler = handler
 
     def test_sys_log(self):
-        message = '{"indicator": "", "config": "", "supplier_name": "", "confidence": ""}'
+        SPLIT_WORD = '|threat|'
+        message = SPLIT_WORD + ' {"indicator": "test", "config": {"c":"1"}, "supplier_name": "s_n", "confidence": "c_n","weight":10}'
         self.logger.info(message)
         self.assertIn(message, self.handler.messages)

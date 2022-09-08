@@ -61,3 +61,17 @@ ops:
 Привязать gitlab-runner к проекту
 
 - sudo gitlab-runner register --url https://gitlab.in.axept.com/ --registration-token {TOKEN}
+
+
+# Запуск SysLog
+* Тесты - python manage.py test
+* файл threatintel/intelhandler/tests.py
+
+
+* запуск скрипта - syslog_producer.py
+* python worker/syslog_producer.py
+
+
+* ручное тестирование:
+запускаем collector_consumer (настраиваем его), следующим запускаем скрипт syslog_producer.py (внутри файла уже есть тестовый запрос)
+* 
