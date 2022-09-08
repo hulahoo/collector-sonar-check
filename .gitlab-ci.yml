@@ -1,59 +1,6 @@
-#image:
-#  name: docker/compose:1.29.1
-#
-#stages:
-#  - build
-#  - deploy
-#
-#build:
-#  stage: build
-#  script:
-#    - docker-compose -f docker-compose.prod.yml pull
-#    - docker-compose -f docker-compose.yml up --force-recreate --build -d
-#
-#deploy:
-#  stage: deploy
-#  script:
-#    - echo "Deploy"
-#    - docker-compose -f docker-compose.prod.yml pull
-#    - docker-compose -f docker-compose.yml up --force-recreate --build -d
-#  only:
-#    - main
-
-# To contribute improvements to CI/CD templates, please follow the Development guide at:
-# https://docs.gitlab.com/ee/development/cicd/templates.html
-# This specific template is located at:
-# https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/templates/Python.gitlab-ci.yml
-
-# Official language image. Look for the different tagged releases at:
-# https://hub.docker.com/r/library/python/tags/
-#image: python:latest
-
-# Change pip's cache directory to be inside the project directory since we can
-# only cache local items.
-#variables:
-#  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
-
-# Pip's cache doesn't store the python packages
-# https://pip.pypa.io/en/stable/topics/caching/
-#
-# If you want to also cache the installed packages, you have to install
-# them in a virtualenv and cache it as well.
-#cache:
-#  paths:
-##    - .cache/pip
-#    - venv/
-
 before_script:
   - python3 --version  # For debugging
-#  - echo "the project directory is - $CI_PROJECT_DIR"
-#  - cat $CI_PROJECT_DIR/README.md ; echo
-#  - echo "and where am I? - $PWD"
   - cp /home/ubuntu/.env ./threatintel/.env
-#  - cat ./.env
-#  - pip3 install virtualenv
-#  - virtualenv venv
-#  - source venv/bin/activate
 
 #test:
 #  script:
@@ -63,25 +10,4 @@ before_script:
 
 run:
   script:
-#    - python3 test_script.py
     - docker-compose up --force-recreate --build -d
-#    - pip install -r threatintel/requirements.txt
-#    - python threatintel/manage.py runserver 0.0.0.0:8000
-    # an alternative approach is to install and run:
-#    - pip install dist/*
-    # run the command here
-#  artifacts:
-#    paths:
-#      - dist/*.whl
-
-#pages:
-#  script:
-#    - pip install sphinx sphinx-rtd-theme
-#    - cd doc
-#    - make html
-#    - mv build/html/ ../public/
-#  artifacts:
-#    paths:
-#      - public
-#  rules:
-#    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Indicator, Feed, Source
+from .models import Indicator, Feed, Source, LogStatistic
 
 
 class IndicatorSerializer(serializers.ModelSerializer):
@@ -32,3 +32,8 @@ class IndicatorWithFeedsSerializer(serializers.ModelSerializer):
         queryset = queryset.prefetch_related('feeds')
 
         return queryset
+
+class LogStatisticSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LogStatistic
+        exclude = []

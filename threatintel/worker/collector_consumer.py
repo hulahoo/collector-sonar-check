@@ -1,4 +1,5 @@
 import json
+import sys
 from uuid import uuid4
 
 from dagster import op, get_dagster_logger, job, Field, DynamicOut, DynamicOutput
@@ -8,6 +9,7 @@ from kafka import KafkaConsumer, TopicPartition
 
 def exist_indicator(indicator, data: dict, config):
     from intelhandler.models import Indicator, Statistic
+    print(indicator,'indicator')
     indicator: Indicator
     indicator.detected += 1
     indicator.last_detected_date = timezone.now()
@@ -20,13 +22,12 @@ def exist_indicator(indicator, data: dict, config):
 
 def not_exist_indicator(data, config):
     from intelhandler.models import Indicator, Statistic
-
     value = data.get('indicator')
-    Indicator.objects.get_or_create(name=value, defaults={
+    Indicator.objects.get_or_create(supplier_name=value, defaults={
         "uuid": uuid4(),
-        "supplier_name": data.get('supplier_name', value),
-        "supplier_confidence": data.get('confidence', value),
-        "weight": data.get('confidence', value),
+        # "supplier_name": data.get('supplier_name', value),
+        "supplier_confidence": data.get('weight', data.get('confidence', value)),
+        "weight": data.get('weight', data.get('confidence', value)),
         "detected": 1,
         "first_detected_date": timezone.now(),
         "last_detected_date": timezone.now()
@@ -36,15 +37,15 @@ def not_exist_indicator(data, config):
     Statistic.objects.create(data=data)
 
 
-def event_worker(data: dict):
+def event_worker(data: dict, config):
     from intelhandler.models import Indicator
     indicator = data.get('indicator')
-    # todo find by that
-    indicator_obj = Indicator.objects.filter(name=indicator).first()
+
+    indicator_obj = Indicator.objects.filter(supplier_name=indicator).first()
     if indicator_obj is not None:
-        exist_indicator(indicator, data, config)
+        exist_indicator(indicator_obj, data, config)
     else:
-        not_exist_indicator(indicator, config)
+        not_exist_indicator(data, config)
 
 
 @op(config_schema={'partitions': Field(list)}, out=DynamicOut())
@@ -82,6 +83,7 @@ def op_consumer(context, partition: int):
         for tp, messages in tuple(kafka_consumer.poll(timeout_ms=5000).items()):
             for message in messages:
                 data = json.loads(message.value)
+
                 logger.info(f'{data}')
                 event_worker(data, config)
 

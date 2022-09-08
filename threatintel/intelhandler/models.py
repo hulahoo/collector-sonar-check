@@ -123,9 +123,9 @@ class Indicator(BaseModel):
     )
     value = models.CharField("Значение индикатора", max_length=256)
     weight = models.IntegerField(
-        "Вес", validators=[MaxValueValidator(100), MinValueValidator(0)]
+        "Вес", validators=[MaxValueValidator(100), MinValueValidator(0)], default=0
     )
-    tag = models.ManyToManyField(Tag, "tags")
+    tag = models.ManyToManyField(Tag, "tags", default=None)
     false_detected = models.IntegerField(
         "счетчик ложных срабатываний", validators=[MinValueValidator(0)], default=0
     )
@@ -254,6 +254,14 @@ class Indicator(BaseModel):
 
     # время жизни
     ttl = models.DateTimeField("Дата удаления", blank=True, null=True, default=None)
+
+    enrichment_context = models.JSONField(default=None, null=True)
+
+    push_to_detections = models.BooleanField(default=False)
+
+    false_or_positive = models.BooleanField(default=False)  # false = false, true = positive
+
+    comment = models.TextField(default=None, null=True)
 
     def __str__(self):
         return f"{self.value}"
@@ -395,4 +403,8 @@ class Activity(BaseModel):
 
 
 class Statistic(BaseModel):
+    data = models.JSONField()
+
+
+class LogStatistic(BaseModel):
     data = models.JSONField()

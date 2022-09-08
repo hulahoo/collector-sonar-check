@@ -15,8 +15,9 @@ from confluent_kafka import Consumer, Producer
 from confluent_kafka.admin import AdminClient, NewTopic
 
 # Create your views here.
-from .models import Feed, Indicator, Source
-from .serializers import IndicatorSerializer, FeedSerializer, IndicatorWithFeedsSerializer, SourceSerializer
+from .models import Feed, Indicator, Source, LogStatistic
+from .serializers import IndicatorSerializer, FeedSerializer, IndicatorWithFeedsSerializer, SourceSerializer, \
+    LogStatisticSerializer
 
 
 def feed_add(request):
@@ -65,3 +66,8 @@ class Dashboard(viewsets.ModelViewSet):
 class SourceView(viewsets.ModelViewSet):
     serializer_class = SourceSerializer
     queryset = Source.objects.all()
+
+
+class LogStatisticView(viewsets.ModelViewSet):
+    serializer_class = LogStatisticSerializer
+    queryset = LogStatistic.objects.all()

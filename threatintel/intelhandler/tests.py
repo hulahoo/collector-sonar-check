@@ -1,9 +1,11 @@
+import logging
 import random
 
 from django.test import TestCase
 
 from intelhandler.models import Feed
 from intelhandler.script import parse_stix, parse_csv, parse_misp, parse_free_text, parse_custom_json
+from worker.syslog_producer import SyslogKafkaCustom
 
 
 def randoms():
@@ -68,3 +70,19 @@ class ServicesTestCase(TestCase):
         params = ServicesTestCase.create_feed(self.feed_template, link)
         result = parse_custom_json(*params)
         self.assertEqual(type(result).__name__, 'list')
+
+
+class SyslogTestCase(TestCase):
+    def setUp(self) -> None:
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s | %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+
+        logger = logging.getLogger()
+        handler = SyslogKafkaCustom(test_mode=True)
+        logger.addHandler(handler)
+        self.logger = logger
+        self.handler = handler
+
+    def test_sys_log(self):
+        message = '{"indicator": "", "config": "", "supplier_name": "", "confidence": ""}'
+        self.logger.info(message)
+        self.assertIn(message, self.handler.messages)

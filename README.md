@@ -47,5 +47,17 @@ dagit -f worker/collector_consumer.py появится веб интерфейс
 ops:
   consumer_dispatcher_op:
     config:
-      partitions: [1,2,3]
+      partitions: [ 1,2,3 ]
 ```
+
+# Запуск CI / CD
+
+- cp /home/ubuntu/.env ./threatintel/.env
+
+нужно указать папку и создать файл локально сервере .env
+
+Установить Docker, Docker-compose, gitlab-runner
+
+Привязать gitlab-runner к проекту
+
+- sudo gitlab-runner register --url https://gitlab.in.axept.com/ --registration-token {TOKEN}

@@ -8,6 +8,7 @@ router.register(r'indicators', views.IndicatorListView)
 router.register(r'feeds', views.FeedListView)
 router.register(r'dashboard', views.Dashboard)
 router.register(r'source', views.SourceView)
+router.register(r'logs', views.LogStatisticView)
 urlpatterns = router.urls
 urlpatterns += [
     path("new/", views.feed_add, name="feed_add"),
