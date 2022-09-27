@@ -1,15 +1,15 @@
 import json
 import sys
-from uuid import uuid4
 
 from dagster import op, get_dagster_logger, job, Field, DynamicOut, DynamicOutput
-from django.utils import timezone
 from kafka import KafkaConsumer, TopicPartition
 
 
 def exist_indicator(indicator, data: dict, config):
     from intelhandler.models import Indicator, Statistic
-    print(indicator,'indicator')
+    from django.utils import timezone
+
+    print(indicator, 'indicator')
     indicator: Indicator
     indicator.detected += 1
     indicator.last_detected_date = timezone.now()
@@ -20,32 +20,25 @@ def exist_indicator(indicator, data: dict, config):
     Statistic.objects.create(data=data)
 
 
-def not_exist_indicator(data, config):
-    from intelhandler.models import Indicator, Statistic
-    value = data.get('indicator')
-    Indicator.objects.get_or_create(supplier_name=value, defaults={
-        "uuid": uuid4(),
-        # "supplier_name": data.get('supplier_name', value),
-        "supplier_confidence": data.get('weight', data.get('confidence', value)),
-        "weight": data.get('weight', data.get('confidence', value)),
-        "detected": 1,
-        "first_detected_date": timezone.now(),
-        "last_detected_date": timezone.now()
-    })
+def feed_creator(data, config):
+    from intelhandler.models import Statistic, Feed
+    from worker.services import choose_type
 
-    data['config'] = config
+    try:
+        try:
+            method = choose_type(data.get('type', 'json'))
+        except Exception as e:
+            method = choose_type('json')
+        # получаем список методов для фида
+        feed = Feed.create_feed(data['feed'])
+        feed.save()
+        method(feed, None, config)
+    except Exception as e:
+        print(e)
+        print(str(data)[:30])
+        print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
     Statistic.objects.create(data=data)
-
-
-def event_worker(data: dict, config):
-    from intelhandler.models import Indicator
-    indicator = data.get('indicator')
-
-    indicator_obj = Indicator.objects.filter(supplier_name=indicator).first()
-    if indicator_obj is not None:
-        exist_indicator(indicator_obj, data, config)
-    else:
-        not_exist_indicator(data, config)
 
 
 @op(config_schema={'partitions': Field(list)}, out=DynamicOut())
@@ -62,6 +55,8 @@ def consumer_dispatcher_op(context):
 @op(config_schema={"config": Field(dict)})
 def op_consumer(context, partition: int):
     config = context.op_config['config']
+    if config is None:
+        config = {}
 
     from worker.utils import django_init
     django_init()
@@ -79,13 +74,14 @@ def op_consumer(context, partition: int):
     topic_partition = TopicPartition(topic, partition)
     topics = [topic_partition]
     kafka_consumer.assign(topics)
+
     while True:
         for tp, messages in tuple(kafka_consumer.poll(timeout_ms=5000).items()):
             for message in messages:
                 data = json.loads(message.value)
 
                 logger.info(f'{data}')
-                event_worker(data, config)
+                feed_creator(data, config)
 
 
 @op

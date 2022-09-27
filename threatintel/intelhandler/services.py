@@ -95,11 +95,10 @@ def convert_txt_to_indicator(feed, raw_indicators=None):
         return complete_indicators
 
 
-def feed_control(feed, config):
+def feed_control(feed:Feed, config):
     fields = ['type_of_feed', 'format_of_feed', 'auth_type', 'polling_frequency', 'auth_login', 'auth_password',
               'ayth_querystring', 'separator', 'custom_field', 'sertificate', 'vendor', 'name', 'link', 'confidence',
               'records_quantity', 'update_status', 'ts', 'source_id']
-
     if config.get('is_instead_full', False):
         Feed.objects.filter(name=feed.name).delete()
         feed.save()

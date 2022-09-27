@@ -5,7 +5,7 @@ from django.db import models
 from django.db.models import DateTimeField
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils import timezone
-
+from django.contrib.auth.models import UserManager
 from intelhandler.constants import *
 from django.contrib.auth.models import PermissionsMixin, UserManager as DjangoUserManager
 
@@ -79,8 +79,17 @@ class BaseModel(models.Model):
         abstract = True
 
 
+class Role(BaseModel):
+    name = models.CharField(max_length=255)
+    level = models.IntegerField()
+
+
 class User(BaseModel, AbstractBaseUser, PermissionsMixin):
+    objects = UserManager()
+
     username = models.CharField(unique=True, max_length=255)
+
+    role = models.ForeignKey('Role', on_delete=models.SET_NULL, null=True)
 
     @property
     def is_staff(self):
@@ -146,7 +155,7 @@ class Indicator(BaseModel):
     supplier_vendor_name = models.CharField("Название поставщика ", max_length=128)
     supplier_type = models.CharField("Тип поставщика", max_length=64)
     supplier_confidence = models.IntegerField(
-        "Достоверность", validators=[MaxValueValidator(100), MinValueValidator(0)]
+        "Достоверность", validators=[MaxValueValidator(100), MinValueValidator(0)], default=0
     )
     supplier_created_date = DateTimeField(
         "Дата последнего обновления", blank=True, null=True
@@ -263,12 +272,19 @@ class Indicator(BaseModel):
 
     comment = models.TextField(default=None, null=True)
 
+    is_archived = models.BooleanField(default=False, db_index=True)
+
     def __str__(self):
         return f"{self.value}"
 
     @classmethod
     def get_model_fields(cls):
-        return {i.attname: list(i.class_lookups.keys()) for i in cls._meta.fields}
+        exclude = ('enrichment_context',)
+        fields = {}
+        for i in cls._meta.fields:
+            if i.attname not in exclude:
+                fields[i.attname] = list(i.class_lookups.keys())
+        return fields
 
     class Meta:
         verbose_name = "Индикатор"
@@ -285,7 +301,7 @@ class ParsingRule(BaseModel):
         verbose_name_plural = "Правила парсинга"
 
 
-class Feed(BaseModel):
+class Feed(models.Model):
     """
     Модель фида - источника данных.
     """
@@ -332,7 +348,7 @@ class Feed(BaseModel):
     name = models.CharField("Название фида", max_length=32, unique=True)
     link = models.CharField("Ссылка на фид", max_length=255)
     confidence = models.IntegerField(
-        "Достоверность", validators=[MaxValueValidator(100), MinValueValidator(0)]
+        "Достоверность", validators=[MaxValueValidator(100), MinValueValidator(0)], default=0
     )
     records_quantity = models.IntegerField("Количество записей", blank=True, null=True)
     indicators = models.ManyToManyField(
@@ -341,9 +357,12 @@ class Feed(BaseModel):
 
     update_status = models.CharField(max_length=15, choices=TYPE_OF_STATUS_UPDATE, default=ENABLED)
 
-    ts = models.DateTimeField(auto_now_add=True)
+    ts = models.DateTimeField(auto_now_add=True,default=timezone.now)
 
     source = models.ForeignKey("Source", on_delete=models.SET_NULL, null=True, default=None)
+
+    created = models.DateTimeField(auto_now_add=True,default=timezone.now)
+    modified = models.DateTimeField(auto_now=True,default=timezone.now)
 
     def __str__(self):
         return f"{self.name}"
@@ -351,6 +370,15 @@ class Feed(BaseModel):
     @classmethod
     def get_model_fields(cls):
         return [i.attname for i in cls._meta.fields]
+
+    @classmethod
+    def create_feed(cls, data: dict):
+        fields = tuple(cls.get_model_fields())
+        feed = {}
+        for key in data:
+            if key in fields:
+                feed[key] = data[key]
+        return Feed(**feed)
 
     class Meta:
         verbose_name = "Фид"
@@ -396,10 +424,28 @@ class ActivityType(BaseModel):
 
 
 class Activity(BaseModel):
-    indicator = models.ForeignKey('Indicator', on_delete=models.CASCADE)
+    indicator = models.ForeignKey('Indicator', on_delete=models.CASCADE, related_name='activities')
     activity_type = models.ForeignKey('ActivityType', on_delete=models.DO_NOTHING)
-    comment = models.TextField()
+    comment = models.TextField(null=True, default=None)
     user = models.ForeignKey('User', on_delete=models.SET_NULL, null=True, default=None)
+    tag = models.ForeignKey('Tag', on_delete=models.SET_NULL, null=True, default=None)
+
+
+class Task(BaseModel):
+    source = models.ForeignKey('Source', on_delete=models.CASCADE)
+    is_scheduled = models.BooleanField(default=False)
+
+
+class Enrichment(BaseModel):
+    type = models.CharField(
+        "Тип индикатора", max_length=4, choices=TYPE_OF_INDICATOR_CHOICES, default=IP
+    )
+    link = models.TextField()  # www.google.com/?ip={}
+
+
+class UserStatistic(BaseModel):
+    user = models.ForeignKey('User', on_delete=models.CASCADE)
+    method_name = models.CharField(max_length=100)
 
 
 class Statistic(BaseModel):
@@ -408,3 +454,7 @@ class Statistic(BaseModel):
 
 class LogStatistic(BaseModel):
     data = models.JSONField()
+
+
+class PatternStorage(BaseModel):
+    data = models.TextField()

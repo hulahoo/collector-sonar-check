@@ -1,5 +1,6 @@
 import csv
 import json
+import sys
 from uuid import uuid4
 
 from bs4 import BeautifulSoup
@@ -15,30 +16,34 @@ initialize_options(options={"spec_version": "2.1"})
 
 
 def parse_custom_json(feed, raw_indicators=None, config: dict = {}):
-    """
-    Парсит переданный кастомный json с выбранными из фида полями и отдает список индикаторов.
-    """
-    limit = config.get('limit', None)
+    try:
+        """
+        Парсит переданный кастомный json с выбранными из фида полями и отдает список индикаторов.
+        """
+        limit = config.get('limit', None)
 
-    feed_control(feed, config)
-    raw_json = json.loads(get_url(feed.link))
-    indicators = []
+        feed_control(feed, config)
+        raw_json = json.loads(get_url(feed.link))
+        indicators = []
 
-    if limit:
-        lst = list(FlatterDict(raw_json).items())[:limit]
-    else:
-        lst = list(FlatterDict(raw_json).items())
+        if limit:
+            lst = list(FlatterDict(raw_json).items())[:limit]
+        else:
+            lst = list(FlatterDict(raw_json).items())
 
-    for key, value in lst:
-        indicator, created = Indicator.objects.get_or_create(value=value, defaults={
-            "uuid": uuid4(),
-            "supplier_name": feed.vendor,
-            "supplier_confidence": feed.confidence,
-            "weight": feed.confidence
-        })
-        indicator.feeds.add(feed)
-        indicators.append(indicator)
-    return indicators
+        for key, value in lst:
+            indicator, created = Indicator.objects.get_or_create(value=value, defaults={
+                "uuid": uuid4(),
+                "supplier_name": feed.vendor,
+                "supplier_confidence": feed.confidence,
+                "weight": feed.confidence
+            })
+            indicator.feeds.add(feed)
+            indicators.append(indicator)
+        return indicators
+    except Exception as e:
+        print('Error on line {}'.format(sys.exc_info()[-1].tb_lineno), type(e).__name__, e)
+
 
 
 def parse_stix(feed, raw_indicators=None, config: dict = {}):
