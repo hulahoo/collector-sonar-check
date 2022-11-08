@@ -10,7 +10,6 @@ log.log
 *.noseids
 .nyc_output
 .vscode-test
-*.env
 venv/**
 npm-debug.log
 **/.mypy_cache/**
@@ -100,10 +99,14 @@ profile_default/
 ipython_config.py
 .pdm.toml
 __pypackages__/
-threatintel/.env
+.env
 .venv
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
+.fleet
+.vscode
+*poetry.lock*
+*/static*/
