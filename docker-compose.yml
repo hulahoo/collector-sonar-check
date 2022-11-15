@@ -10,35 +10,26 @@ services:
         - 5432
     env_file:
         - .env
-
-  dagster:
-    build: .
-    restart: on-failure
-    env_file:
-        - .env
+    
+  zookeeper:
+    image: 'bitnami/zookeeper:latest'
     ports:
-      - "3000:3000"
-    volumes:
-        - .:/usr/src/app/
-    depends_on:
-        - db
-    environment:
-        - CONTAINER_TYPE=DAGSTER_CONTAINER
-
-  enrichment:
-    build: .
-    volumes:
-      - .:/usr/src/app/
+      - '2181:2181'
     env_file:
       - .env
-    depends_on:
-      - db
-    ports:
-      - "8000:8000"
-    environment:
-      - CONTAINER_TYPE=ENRICHMENT_CONTAINER
 
-  worker:
+  kafka:
+      image: 'bitnami/kafka:latest'
+      ports:
+        - '9092:9092'
+      env_file:
+        - .env
+      depends_on:
+        - zookeeper
+      volumes:
+        - ./server.properties:/bitnami/kafka/config/server.properties
+
+  collector:
       build: .
       volumes:
           - .:/usr/src/app/
@@ -46,7 +37,10 @@ services:
           - .env
       depends_on:
           - db
-      environment:
-          - CONTAINER_TYPE=WORKER_CONTAINER
+          - kafka
       ports:
-          - "9000:9000"
+          - "8000:8000"
+
+networks: 
+    external:
+      name: kafka_net
