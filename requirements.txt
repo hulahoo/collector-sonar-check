@@ -4,11 +4,14 @@ psycopg2-binary==2.9.3
 requests==2.27.1
 djangorestframework==3.13.1
 beautifulsoup4==4.11.1
-confluent-kafka==1.8.2
+kafka-python==2.0.2
 stix2-elevator
+loguru==0.6.0
 stix2
 flatdict
 dagster
-kafka-python
 dagit
 django-filter
+pydantic==1.10.2
+psycopg2==2.9.5
+alembic==1.8.1

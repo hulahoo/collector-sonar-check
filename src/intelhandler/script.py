@@ -8,8 +8,7 @@ from bs4 import BeautifulSoup
 from flatdict import FlatterDict
 from stix2elevator.options import initialize_options
 
-from src.models.feed import Feed
-from src.models.indicator import Indicator
+from src.models.models import Feed, Indicator
 from src.intelhandler.services import parse_misp_event, get_url, get_or_elevate, convert_txt_to_indicator
 
 initialize_options(options={"spec_version": "2.1"})
