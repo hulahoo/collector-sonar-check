@@ -1,1 +1,0 @@
-from src.apps.collector.events_handler import events_entrypoint # noqa

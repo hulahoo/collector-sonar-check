@@ -1,10 +1,11 @@
 from abc import abstractmethod, ABC
 from contextlib import contextmanager
 
-from sqlalchemy.ext.asyncio import create_async_engine
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker, scoped_session
 
+from src.config.config import settings
 
 Base = declarative_base()
 
@@ -41,13 +42,17 @@ class Database(ABC):
 
 class SyncPostgresDriver(Database):
     def _create_engine(self):
-        return create_async_engine(
+        return create_engine(
             self._get_db_url(),
             pool_pre_ping=True,
             pool_recycle=3600,
             max_overflow=10,
             pool_size=15,
         )
+
+    def _get_db_url(self):
+        return f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@" \
+                f"{settings.POSTGRES_SERVER}:{settings.POSTGRES_DB_PORT}/{settings.POSTGRES_DB}"
 
     def _init_session_factory(self):
         return scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=self._engine))

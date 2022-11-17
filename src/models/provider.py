@@ -13,4 +13,7 @@ class FeedProvider:
             db.refresh(feed)
             return feed
 
-    def delete(self, filter_fields: dict):
+    def delete(self, feed_name: str):
+        with SyncPostgresDriver().session() as db:
+            db.query(Feed).filter(Feed.name == feed_name).delete()
+            db.commit()

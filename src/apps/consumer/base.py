@@ -4,7 +4,7 @@ import traceback
 
 from dagster import get_dagster_logger
 
-from src.worker.collector_consumer import feed_creator
+from src.apps.collector.services import feed_creator
 from src.apps.consumer.abstract import AbstractConsumer
 
 

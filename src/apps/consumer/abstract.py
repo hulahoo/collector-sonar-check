@@ -32,8 +32,8 @@ class AbstractConsumer(ABC):
                 logger.exception("Error in creating consumer")
 
     @abstractmethod
-    async def start_process(self):
+    def start_process(self):
         raise NotImplementedError
 
-    async def stop_consumer(self):
+    def stop_consumer(self):
         self.consumer.stop()

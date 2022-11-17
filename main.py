@@ -15,3 +15,4 @@ def main() -> None:
     """
     results = consumer_dispatcher_op().map(events_hadler)
     consumer_collector(results.collect())
+

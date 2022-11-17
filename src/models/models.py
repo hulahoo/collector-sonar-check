@@ -30,10 +30,10 @@ class Tag(IDBase, TimestampBase):
     """
     Модель тега.
     """
-    __table_name__ = "tag"
+    __tablename__ = "tag"
 
-    name = Column("Название тега", String(30))
-    colour = Column("Название тега", String(30), nullable=True)
+    name = Column(String(30))
+    colour = Column(String(30), nullable=True)
     exportable = Column(Boolean, nullable=True)
 
     def __str__(self):
@@ -47,52 +47,46 @@ class Indicator(IDBase, TimestampBase):
     __tablename__ = "indicator"
 
     type = Column(
-        "Тип индикатора", Enum(TypesEnum), default=TypesEnum.IP, nullable=False
+         Enum(TypesEnum), default=TypesEnum.IP, nullable=False, name="types"
     )
     uuid = Column(
-        "Уникальный идентификатор индикатора", String(255), unique=True
+        String(255), unique=True
     )
     category = Column(
-        "Категория индикатора", String(128), nullable=True
+         String(128), nullable=True
     )
 
     value = Column(
-        "Значение индикатора", String(256)
+         String(256)
     )
 
     weight = Column(
-        "Вес", Integer, CheckConstraint("weight > 0 AND age < 100"), default=0
+     Integer, CheckConstraint("weight > 0 AND age < 100"), default=0
     )
 
     tags = relationship(
-        Tag, secondary="indicator_tag_m2m_table", backref="indicators", default=None
+        Tag, secondary="indicator_tag_m2m_table", backref="indicators"
     )
 
     false_detected = Column(
-        "счетчик ложных срабатываний", Integer, CheckConstraint("false_detected > 0"), default=0
+        Integer, CheckConstraint("false_detected > 0"), default=0
     )
     positive_detected = Column(
-        "счетчик позитивных срабатываний", Integer, CheckConstraint("positive_detected > 0"), default=0
+        Integer, CheckConstraint("positive_detected > 0"), default=0
     )
     detected = Column(
-        "общий счетчик срабатываний", Integer, CheckConstraint("detected > 0"), default=0
+        Integer, CheckConstraint("detected > 0"), default=0
     )
-    first_detected_date = DateTime(
-        "Дата первого срабатывания", nullable=True
-    )
-    last_detected_date = DateTime(
-        "Дата последнего срабатывания", nullable=True
-    )
+    first_detected_date = Column(DateTime, nullable=True)
+    last_detected_date = Column(DateTime, nullable=True)
     # Данные об источнике
-    supplier_name = Column("Название источника", String(128))
-    supplier_vendor_name = Column("Название поставщика ", String(128))
-    supplier_type = Column("Тип поставщика", String(64))
+    supplier_name = Column(String(128))
+    supplier_vendor_name = Column(String(128))
+    supplier_type = Column(String(64))
     supplier_confidence = Column(
-        "Достоверность", Integer, CheckConstraint("supplier_confidence > 0 AND supplier_confidence < 100"), default=0
+        Integer, CheckConstraint("supplier_confidence > 0 AND supplier_confidence < 100"), default=0
     )
-    supplier_created_date = DateTime(
-        "Дата последнего обновления", nullable=True
-    )
+    supplier_created_date = Column(DateTime, nullable=True)
     # Контекст
     ioc_context_exploits_md5 = Column(String(64), nullable=True)
     ioc_context_exploits_sha1 = Column(String(64), nullable=True)
@@ -189,7 +183,7 @@ class Indicator(IDBase, TimestampBase):
     ioc_context_whois_updated = Column(String(64), nullable=True)
 
     # время жизни
-    ttl = DateTime("Дата удаления", nullable=True, default=None)
+    ttl = Column(DateTime, nullable=True, default=None)
 
     enrichment_context = Column(JSONB, default=None, nullable=True)
 
@@ -214,7 +208,12 @@ class Indicator(IDBase, TimestampBase):
         return fields
 
 
-class FeedM2MTable(IDBase):
+class Statistic(IDBase, TimestampBase):
+    __tablename__ = "statistic"
+    data = Column(JSONB, nullable=True)
+
+
+class FeedParsingRuleM2MTable(IDBase):
     __tablename__ = "feed_parsing_rule_m2m_table"
 
     parsing_rule_id = Column(
@@ -259,31 +258,34 @@ class Feed(IDBase, TimestampBase):
     __tablename__ = "feed"
 
     type_of_feed = Column(
-        "Тип фида", Enum(TypesEnum), default=TypesEnum.IP
+        Enum(TypesEnum), default=TypesEnum.IP,
+        name="types"
     )
     format_of_feed = Column(
-        "Формат фида", Enum(FeedFormatEnum), default=FeedFormatEnum.TXT_FILE
+        Enum(FeedFormatEnum), default=FeedFormatEnum.TXT_FILE,
+        name="format_of_feed"
     )
     auth_type = Column(
-        "Тип авторизации", Enum(AuthEnum), default=AuthEnum.NO_AUTH
+        Enum(AuthEnum), default=AuthEnum.NO_AUTH,
+        name="auth_type"
     )
     polling_frequency = Column(
-        "Частота обновления фида",
         Enum(PollingFrequencyEnum),
         default=PollingFrequencyEnum.NEVER,
+        name="polling_frequency"
     )
 
     auth_login = Column(
-        "Логин для авторизации", String(32), nullable=True
+        String(32), nullable=True
     )
     auth_password = Column(
-        "Пароль для авторизации", String(64), nullable=True
+        String(64), nullable=True
     )
     ayth_querystring = Column(
-        "Строка для авторизации", String(128), nullable=True
+        String(128), nullable=True
     )
     separator = Column(
-        "Разделитель для CSV формата", String(8), nullable=True
+        String(8), nullable=True
     )
     parsing_rules = relationship(
         ParsingRule,
@@ -291,23 +293,26 @@ class Feed(IDBase, TimestampBase):
         backref="feeds"
     )
     custom_field = Column(
-        "Кастомное поле", String(128), nullable=True
+        String(128), nullable=True
     )
-    sertificate_file_name = Column("Имя файла сертификата", String(50), nullable=True)
-    sertificate = Column("Файл сертификат", LargeBinary, nullable=True)
-    vendor = Column("Вендор", String(32))
-    name = Column("Название фида", String(32), unique=True)
-    link = Column("Ссылка на фид", String(255))
+    sertificate_file_name = Column(String(50), nullable=True)
+    sertificate = Column(LargeBinary, nullable=True)
+    vendor = Column(String(32))
+    name = Column(String(32), unique=True)
+    link = Column(String(255))
     confidence = Column(
-        "Достоверность", Integer, CheckConstraint("confidence > 0 AND confidence < 100"), default=0
+        Integer, CheckConstraint("confidence > 0 AND confidence < 100"), default=0
     )
-    records_quantity = Column("Количество записей", Integer, nullable=True)
+    records_quantity = Column(Integer, nullable=True)
 
     indicators = relationship(
         Indicator, backref="feeds", secondary="feed_indicator_m2m_table"
     )
 
-    update_status = Column(Enum(StatusUpdateEnum), default=StatusUpdateEnum.ENABLED)
+    update_status = Column(
+        Enum(StatusUpdateEnum), default=StatusUpdateEnum.ENABLED,
+        name="update_status_enum"
+    )
 
     ts = Column(DateTime, default=func.now())
 
@@ -347,24 +352,26 @@ class Source(IDBase, TimestampBase):
     is_active = Column(Boolean, default=True)
     provider_name = Column(String(255))
     path = Column(Text)
-    certificate_file_name = Column("Путь к сертификату", String(50), nullable=True)
-    certificate = Column("Файл сертификат", LargeBinary, nullable=True)
+    certificate_file_name = Column(String(50), nullable=True)
+    certificate = Column(LargeBinary, nullable=True)
     authenticity = Column(
-        "Достоверность", Integer, CheckConstraint("authenticity > 0 AND authenticity < 100"),
+        Integer, CheckConstraint("authenticity > 0 AND authenticity < 100"),
         default=0
     )
     format = Column(
-        "Формат", Enum(FormatTypeEnum), default=FormatTypeEnum.CSV
+        Enum(FormatTypeEnum), default=FormatTypeEnum.CSV,
+        name="format"
     )
 
     auth_type = Column(
-        "Тип авторизации", Enum(AuthEnum), default=AuthEnum.NO_AUTH
+        Enum(AuthEnum), default=AuthEnum.NO_AUTH,
+        name="auth_type"
     )
     auth_login = Column(
-        "Логин для авторизации", String(32), nullable=True
+        String(32), nullable=True
     )
     auth_password = Column(
-        "Пароль для авторизации", String(64), nullable=True
+        String(64), nullable=True
     )
 
     max_rows = Column(Integer, default=None, nullable=True)
