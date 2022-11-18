@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name=os.environ["CI_PROJECT_NAME"],
-    version=os.environ["ARTIFACT_VERSION"],
+    version="0.0.1",
     description=os.environ["CI_PROJECT_TITLE"],
     url=os.environ["CI_PROJECT_URL"],
     install_requires=[
