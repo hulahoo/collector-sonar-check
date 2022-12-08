@@ -15,7 +15,10 @@ install_requires = [
     ('stix2', '3.0.1'),
     ('flatdict', '4.0.1'),
     ('dagster', '1.0.17'),
-    ('dagit', '1.0.17')
+    ('dagit', '1.0.17'),
+    ("alembic", "1.8.1"),
+    ("flask-restplus", "0.13.0"),
+    ("Flask", "1.1.2")
 ]
 
 CI_PROJECT_NAME = os.environ.get("CI_PROJECT_NAME", "events-gateway").replace("-", "_")

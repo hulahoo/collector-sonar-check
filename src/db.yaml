@@ -2,20 +2,28 @@ feed:
   - id
   - type_of_feed # Тип фида
   - format_of_feed # Формат фида
-  - auth_type # Тип авторизации
   - polling_frequency # Частота обновления фида
+  - auth_type # Тип авторизации
+  - auth_token
   - auth_login # Логин для авторизации
   - auth_password # Пароль для авторизации
-  - ayth_querystring # Строка для авторизации
+
   - separator # Разделитель для CSV формата
   - custom_field # Кастомное поле
   - sertificate # файл сертификат
-  - vendor # Вендор
   - name # Название фида
   - link # Ссылка на фид
   - confidence # Достоверность
   - records_quantity # Количество записей
   - indicators # Индикатор - m2m
+  - is_active
+  - created_at
+  - deleted_at
+
+feed_raw_data:
+  - id
+  - created_at
+  - feed_id
 
 indicator:
   - id

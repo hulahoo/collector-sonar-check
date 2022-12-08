@@ -16,7 +16,7 @@ class Database(ABC):
         self._session_factory = self._init_session_factory()
 
     @abstractmethod
-    def _get_db_url(self):
+    def get_db_url(self):
         ...
 
     @abstractmethod
@@ -43,14 +43,14 @@ class Database(ABC):
 class SyncPostgresDriver(Database):
     def _create_engine(self):
         return create_engine(
-            self._get_db_url(),
+            self.get_db_url(),
             pool_pre_ping=True,
             pool_recycle=3600,
             max_overflow=10,
             pool_size=15,
         )
 
-    def _get_db_url(self):
+    def get_db_url(self):
         return f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@" \
                 f"{settings.POSTGRES_SERVER}:{settings.POSTGRES_DB_PORT}/{settings.POSTGRES_DB}"
 

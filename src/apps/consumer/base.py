@@ -1,6 +1,7 @@
 import sys
 import json
 import traceback
+from typing import List
 
 from dagster import get_dagster_logger
 
@@ -10,8 +11,9 @@ from src.apps.consumer.abstract import AbstractConsumer
 
 class BaseConsumer(AbstractConsumer):
 
-    def __init__(self, context: dict):
+    def __init__(self, context: dict, partition: List[int]):
         self.context = context
+        self.partition = partition
         super().__init__(self)
 
     def start_process(self):
@@ -19,12 +21,12 @@ class BaseConsumer(AbstractConsumer):
         self.process_handler_service()
 
     def process_handler_service(self):
+        logger = get_dagster_logger()
         logger.info("Start process services...")  # noqa
 
         for event in tuple(self.consumer.poll(timeout_ms=5000).items()):
             message = json.loads(event.value)
             try:
-                logger = get_dagster_logger()
                 context_config = self.context.op_config["config"]
                 config = dict() if context_config is None else context_config
                 logger.info(f"Incoming config is: {config}")

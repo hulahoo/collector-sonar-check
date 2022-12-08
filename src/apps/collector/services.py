@@ -1,6 +1,5 @@
 from loguru import logger
 
-from src.models.models import Statistic
 from src.models.services import create_feed
 from src.apps.collector.parsers import (
     parse_csv, parse_custom_json, parse_free_text,
