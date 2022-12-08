@@ -42,10 +42,10 @@ psvc:
 
 spec:
   ports:
-    - name: syslog
-      port: 80
+    - name: kafka
+      port: 9092
       protocol: TCP
-      targetPort: 8000
+      targetPort: 9092
 
   livenessProbe:
     failureThreshold: 5
