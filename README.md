@@ -1,4 +1,4 @@
-# feeds-import-worker
+# events-collector
 
 Сервис создан для импорта внешних ресурсов Threat Intelligence.
 
@@ -23,8 +23,8 @@ ops:
 Имеющиеся env-параметры в проекте:
     ```
     KAFKA_BOOTSTRAP_SERVER=""  # хост на котором расположена кафка
-    COLLECTOR_KAFKA_GROUP_ID=""  # груп id кафки  
-
+    KAFKA_GROUP_ID=""  # груп id кафки  
+    TOPIC_CONSUME_EVENTS=""
     POSTGRES_SERVER=""
     POSTGRES_PASSWORD=""
     POSTGRES_USER=""
@@ -36,5 +36,5 @@ ops:
 ## Информация о файлах конфигурации
 Все конфигурции можно найти в директории:
 ```
-    src/apps/config
+  src/apps/config
 ```
