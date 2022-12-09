@@ -1,33 +1,21 @@
 from loguru import logger
 
-from src.models.models import Statistic
-from src.models.services import create_feed
-from src.apps.collector.parsers import (
-    parse_csv, parse_custom_json, parse_free_text,
-    parse_misp, parse_stix
-)
+from src.apps.collector.selectors import stat_checked_selector
+from src.apps.collector.parsers import json_event_matching
 
 
 def choose_type(name: str):
     methods = {
-        "json": parse_custom_json,
-        "stix": parse_stix,
-        "free_text": parse_free_text,
-        "misp": parse_misp,
-        "csv": parse_csv,
-        "txt": parse_free_text
+        "JSON": json_event_matching,
     }
     return methods[name]
 
 
-def feed_creator(*, feed: dict, config: dict):
+def event_matching(*, event: dict, config: dict):
+    stat_checked_selector.create()
     try:
-        format_handler = choose_type(feed.get("type", "json"))
+        format_handler = choose_type(event.get("format_of_feed", "JSON"))
         # получаем список методов для фида
-        feed = create_feed(data_to_create_with=feed['feed'])
-        format_handler(feed, None, config)
+        format_handler(event=event)
     except Exception as e:
         logger.exception(f"Error occured: {e}")
-    finally:
-        # Statistic.objects.create(data=feed)
-        ...
