@@ -2,8 +2,8 @@ from typing import Optional
 
 from sqlalchemy import select, desc, and_
 
-from src.models.models import Indicator, StatCheckedObjects, StatMatchedObjects
-from src.models.base import SyncPostgresDriver
+from src.eventscollector.models.models import Indicator, StatCheckedObjects, StatMatchedObjects
+from src.eventscollector.models.base import SyncPostgresDriver
 
 
 class IndicatorProvider:

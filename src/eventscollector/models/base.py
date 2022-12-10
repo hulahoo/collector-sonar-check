@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker, scoped_session
 
-from src.config.config import settings
+from src.eventscollector.config.config import settings
 
 Base = declarative_base()
 

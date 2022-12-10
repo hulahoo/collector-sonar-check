@@ -1,0 +1,2 @@
+# URL URL:http://выписка-егрн-росреестр.рф?ycid=123 URL_domain URL_domain:выписка-егрн-росреестр.рф Destination_port dstPort:80 Event_code event_code:403 Event_name eventName:Access Permitted Log_source logSourceType:ZECURION​srcAssetName:WGO-ADM00000288.go.rshbank.ru Log_source_identifier logSourceIdentifier:10.26.93.142 Log_source_type logSourceType:ZECURION Source_IP src:10.23.65.66 Source_Net_Name srcAssetName:w62sc.ska000353.go.rshbbank.ru Source_port srcPort: 65724 Src_Net_Name srcNetName:GO_RSHBESC User_name userName:<> Dest_IP dst:185.114.246.14
+

@@ -5,8 +5,8 @@ from typing import List
 
 from dagster import get_dagster_logger
 
-from src.apps.collector.services import event_matching
-from src.apps.consumer.abstract import AbstractConsumer
+from src.eventscollector.apps.collector.services import event_matching
+from src.eventscollector.apps.consumer.abstract import AbstractConsumer
 
 
 class BaseConsumer(AbstractConsumer):

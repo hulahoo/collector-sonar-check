@@ -5,8 +5,8 @@ from sqlalchemy import (
     DateTime, Boolean, Enum, CheckConstraint,  BigInteger
 )
 
-from src.commons.enums import TypesEnum
-from src.models.abstract import IDBase, TimestampBase
+from src.eventscollector.commons.enums import TypesEnum
+from src.eventscollector.models.abstract import IDBase, TimestampBase
 
 
 class Indicator(IDBase, TimestampBase):
