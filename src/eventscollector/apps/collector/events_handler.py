@@ -1,7 +1,7 @@
-from loguru import logger
 from dagster import Field, op, DynamicOutput, DynamicOut
 
-from src.apps.consumer.base import BaseConsumer
+from src.eventscollector.config.log_conf import logger
+from src.eventscollector.apps.consumer.base import BaseConsumer
 
 
 @op(config_schema={"config": Field(dict)})

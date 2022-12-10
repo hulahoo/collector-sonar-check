@@ -1,7 +1,6 @@
-from loguru import logger
-
-from src.apps.collector.selectors import stat_checked_selector
-from src.apps.collector.parsers import json_event_matching
+from src.eventscollector.config.log_conf import logger
+from src.eventscollector.apps.collector.selectors import stat_checked_selector
+from src.eventscollector.apps.collector.parsers import json_event_matching
 
 
 def choose_type(name: str):

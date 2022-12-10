@@ -1,10 +1,10 @@
 from typing import Optional
 
-from loguru import logger
 
-from src.models.models import Indicator
-from src.apps.collector.selectors import indicator_selector, stat_matched_selector
-from src.commons.enums import TYPE_LIST
+from src.eventscollector.config.log_conf import logger
+from src.eventscollector.models.models import Indicator
+from src.eventscollector.apps.collector.selectors import indicator_selector, stat_matched_selector
+from src.eventscollector.commons.enums import TYPE_LIST
 
 
 # def create_detection(*, event: dict) -> Detections: # think about format and data to take from
