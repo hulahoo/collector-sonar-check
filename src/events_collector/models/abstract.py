@@ -1,6 +1,6 @@
 import sqlalchemy
 
-from src.eventscollector.models.base import Base
+from events_collector.models.base import Base
 
 
 class IDBase(Base):
