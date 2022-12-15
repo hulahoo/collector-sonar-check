@@ -1,16 +1,21 @@
-from typing import Dict
+from typing import Dict, Optional
 
 from events_collector.config.log_conf import logger
-from events_collector.models.models import Detections
-from events_collector.apps.collector.selectors import stat_checked_selector, detections_selector
-from events_collector.apps.collector.parsers import json_event_matching
+from events_collector.commons.enums import TYPE_LIST
+from events_collector.models.models import Detections, Indicator
+from events_collector.apps.collector.selectors import (
+    stat_checked_selector, detections_selector, indicator_selector, stat_matched_selector
+)
 
 
-def choose_type(name: str):
-    methods = {
-        "JSON": json_event_matching,
-    }
-    return methods[name]
+def filter_event_format_type(*, event: dict) -> str:
+    for key in event:
+        if key in TYPE_LIST:
+            return key
+
+
+def create_matched_object(*, indicator_id: int):
+    stat_matched_selector.create(indicator_id=indicator_id)
 
 
 def event_matching(*, event: dict):
@@ -20,6 +25,31 @@ def event_matching(*, event: dict):
         format_handler(event=event)
     except Exception as e:
         logger.error(f"Error occured: {e}")
+
+
+def choose_type(name: str):
+    methods = {
+        "JSON": json_event_matching,
+    }
+    return methods[name]
+
+
+def json_event_matching(*, event: dict):
+    event_key: str = filter_event_format_type(event=event)
+    event_parent_key: dict = event.get(event_key, {})
+    event_type: str = event_parent_key.get(event_parent_key, {})
+
+    indicator: Optional[Indicator] = indicator_selector.get_by_type_and_value(
+        value=event_type, type=event_key
+    )
+    if indicator:
+        logger.info("Matched found. Create Detection")
+        detection = create_detection(
+            indicator_context=indicator.context, indicator_id=indicator.id,
+            event=event, indicator_weight=indicator.weight
+        )
+        logger.info(f"Created detection: {detection}")
+        create_matched_object(indicator_id=indicator.id)
 
 
 def get_event_values(*, event: dict) -> Dict[str, str]:

@@ -1,4 +1,4 @@
-psycopg2-binary==2.9.3
+psycopg2-binary==2.9.5
 kafka-python==2.0.2
 stix2-elevator==4.1.7
 stix2==3.0.1
