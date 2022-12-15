@@ -10,7 +10,6 @@ install_requires = [
     ('stix2-elevator', '4.1.7'),
     ('stix2', '3.0.1'),
     ('alembic', '1.8.1'),
-    ('flask-restplus', '0.13.0'),
     ('Flask', '1.1.2'),
     ('Flask-WTF', '1.0.1'),
     ('prometheus-client', '0.15.0')

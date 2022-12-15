@@ -60,21 +60,10 @@ def metrics():
 
 @app.route('/api', methods=["GET"])
 def api_routes():
-    """
-    Возвращает api сервиса
-    """
-    return app.response_class(
-        response={"descrption": "Service does not provide api"},
-        status=200,
-        mimetype=mimetype
-    )
-
-
-def api():
     return {
         "openapi:": "3.0.0",
         "info": {
-            "title": "Коллектор событий",
+            "title": "Событийный шлюз",
             "version": "0.0.1",
         },
         "paths": {}
