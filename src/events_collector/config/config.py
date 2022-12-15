@@ -1,8 +1,4 @@
-from dotenv import load_dotenv
-
 from pydantic import BaseSettings
-
-load_dotenv()
 
 
 class Settings(BaseSettings):
@@ -11,11 +7,11 @@ class Settings(BaseSettings):
     TOPIC_CONSUME_EVENTS: str = ""
     KAFKA_GROUP_ID: str = "collector"
 
-    POSTGRES_USER: str = "user"
-    POSTGRES_PASSWORD: str = "password"
-    POSTGRES_SERVER: str = "localhost"
-    POSTGRES_DB_PORT: int = 5432
-    POSTGRES_DB: str = "db"
+    APP_POSTGRESQL_HOST: str = "localhost"
+    APP_POSTGRESQL_PASSWORD: str = "password"
+    APP_POSTGRESQL_USER: str = "username"
+    APP_POSTGRESQL_NAME: str = "db"
+    APP_POSTGRESQL_PORT: int = 5432
 
     class Config:
         env_file = "./.env"

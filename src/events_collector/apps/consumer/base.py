@@ -1,39 +1,31 @@
 import sys
 import json
 import traceback
-from typing import List
 
-from dagster import get_dagster_logger
-
-from src.eventscollector.apps.collector.services import event_matching
-from src.eventscollector.apps.consumer.abstract import AbstractConsumer
+from events_collector.apps.collector.services import event_matching
+from events_collector.config.log_conf import logger
+from events_collector.apps.consumer.abstract import AbstractConsumer
 
 
 class BaseConsumer(AbstractConsumer):
-
-    def __init__(self, context: dict, partition: List[int]):
-        self.context = context
-        self.partition = partition
-        super().__init__(self)
 
     def start_process(self):
         self.start_consumer()
         self.process_handler_service()
 
     def process_handler_service(self):
-        logger = get_dagster_logger()
         logger.info("Start process services...")  # noqa
 
-        for event in tuple(self.consumer.poll(timeout_ms=5000).items()):
+        for event in self.consumer.poll(timeout_ms=5000):
             message = json.loads(event.value)
             try:
                 context_config = self.context.op_config["config"]
                 config = dict() if context_config is None else context_config
 
                 logger.info(f"Incoming config is: {config}")
-                logger.info(f'Incoming events is: {event}')
+                logger.info(f'Incoming events fromm is: {event.topic}')
 
-                event_matching(event=event, config=config)
+                event_matching(event=event)
 
             except Exception as e:
                 exc_info = sys.exc_info()

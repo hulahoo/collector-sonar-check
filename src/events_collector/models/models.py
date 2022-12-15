@@ -1,12 +1,12 @@
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import (
-    Column, Integer, String, ForeignKey, func,
+    Column, Integer, String, ForeignKey, func, Text,
     DateTime, Boolean, Enum, CheckConstraint,  BigInteger
 )
 
-from src.eventscollector.commons.enums import TypesEnum
-from src.eventscollector.models.abstract import IDBase, TimestampBase
+from events_collector.commons.enums import TypesEnum
+from events_collector.models.abstract import IDBase, TimestampBase
 
 
 class Indicator(IDBase, TimestampBase):
@@ -16,10 +16,10 @@ class Indicator(IDBase, TimestampBase):
     __tablename__ = "indicators"
 
     type = Column(
-         Enum(TypesEnum), default=TypesEnum.IP, nullable=False, name="types"
+        Enum(TypesEnum), default=TypesEnum.IP, nullable=False, name="types"
     )
     value = Column(
-         String(256)
+        String(256)
     )
     # Контекст
     context = Column(
@@ -72,4 +72,4 @@ class Detections(IDBase, TimestampBase):
 
     source_event = Column(JSONB, default=None, nullable=True)
     indicator_id = Column(BigInteger, ForeignKey("indicators.id"))
-    detection_event = Column(JSONB, default=None, nullable=True)
+    detection_event = Column(Text, default=None, nullable=True)

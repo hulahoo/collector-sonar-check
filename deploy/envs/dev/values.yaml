@@ -1,0 +1,28 @@
+psvc:
+  name: Сервис Сборщика событий
+  description: Сервис для сборки событий
+
+replicaCount: 1
+
+resources:
+  limits:
+    memory: 1Gi
+    cpu: 1000m
+  requests:
+    memory: 512Mi
+    cpu: 100m
+
+databases:
+  - type: POSTGRESQL
+    host: 10.7.27.113
+    port: 5432
+    name: db
+
+env:
+  KAFKA_BOOTSTRAP_SERVER: kafka.rshbdev.ru:9092
+  KAFKA_GROUP_ID: 1
+  EVENTS_COLLECTOR_TOPIC: syslog
+  ALLOW_ANONYMOUS_LOGIN: yes
+  ALLOW_PLAINTEXT_LISTENER: yes
+
+strategyType: Recreate
