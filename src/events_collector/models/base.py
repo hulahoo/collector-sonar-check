@@ -5,7 +5,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker, scoped_session
 
-from src.eventscollector.config.config import settings
+from events_collector.config.config import settings
 
 Base = declarative_base()
 
@@ -51,8 +51,8 @@ class SyncPostgresDriver(Database):
         )
 
     def get_db_url(self):
-        return f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@" \
-                f"{settings.POSTGRES_SERVER}:{settings.POSTGRES_DB_PORT}/{settings.POSTGRES_DB}"
+        return f"postgresql://{settings.APP_POSTGRESQL_USER}:{settings.APP_POSTGRESQL_PASSWORD}@" \
+                f"{settings.APP_POSTGRESQL_HOST}:{settings.APP_POSTGRESQL_PORT}/{settings.APP_POSTGRESQL_NAME}"
 
     def _init_session_factory(self):
         return scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=self._engine))

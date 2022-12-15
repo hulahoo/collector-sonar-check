@@ -2,8 +2,8 @@ from typing import Optional
 
 from sqlalchemy import select, desc, and_
 
-from src.eventscollector.models.models import Indicator, StatCheckedObjects, StatMatchedObjects
-from src.eventscollector.models.base import SyncPostgresDriver
+from events_collector.models.base import SyncPostgresDriver
+from events_collector.models.models import Indicator, StatCheckedObjects, StatMatchedObjects, Detections
 
 
 class IndicatorProvider:
@@ -39,6 +39,22 @@ class StatMatchedProvider:
             db.commit()
 
 
+class DetectionsProvider:
+    def create(self, indicator_id: int, source_event: dict, detection_event: str) -> Detections:
+        with SyncPostgresDriver().session() as db:
+            detection = Detections(
+                source_event=source_event,
+                indicator_id=indicator_id,
+                detection_event=detection_event
+            )
+
+            db.add(detection)
+            db.flush()
+            db.commit()
+            return detection
+
+
+detections_selector = DetectionsProvider()
 stat_matched_selector = StatMatchedProvider()
 stat_checked_selector = StatCheckedProvider()
 indicator_selector = IndicatorProvider()

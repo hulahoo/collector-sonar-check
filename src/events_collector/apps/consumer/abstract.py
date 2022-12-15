@@ -1,9 +1,9 @@
 import json
 from abc import ABC, abstractmethod
 
-from src.eventscollector.config.log_conf import logger
-from src.eventscollector.config.config import settings
-from src.eventscollector.apps.consumer.services import start_consumer_services
+from events_collector.config.log_conf import logger
+from events_collector.config.config import settings
+from events_collector.apps.consumer.services import start_consumer_services
 
 
 class AbstractConsumer(ABC):
