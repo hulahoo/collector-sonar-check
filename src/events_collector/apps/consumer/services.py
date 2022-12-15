@@ -2,7 +2,7 @@ import json
 
 from kafka import KafkaConsumer, TopicPartition
 
-from config.config import settings
+from events_collector.config.config import settings
 
 
 def start_consumer_services(

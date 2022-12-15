@@ -6,9 +6,12 @@ from events_collector.web.routers.api import execute as flask_app
 from events_collector.apps.collector.events_handler import events_hadler
 
 
-def main() -> None:
+def execute() -> None:
     """
-    Главная функция для запуска определенных сервисов в зависимости от аргумента при вызвове модуля
+    Function entrypoint to start:
+    1. Worker to consume events from kafka
+    2. Flask application to serve enpoints
+    3. Apply migrations
     """
     apply_migrations()
 
