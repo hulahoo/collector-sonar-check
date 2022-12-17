@@ -11,6 +11,14 @@ def create_migrations() -> None:
     engine: Engine = SyncPostgresDriver()._engine
     tables_list = [StatMatchedObjects.__tablename__, StatCheckedObjects.__tablename__, Detections.__tablename__]
 
+    with SyncPostgresDriver().session() as db:
+        db.execute("DROP TABLE IF EXISTS stat_checked_objects CASCADE;")
+        db.execute("DROP TABLE IF EXISTS stat_matched_objects CASCADE;")
+        db.execute("DROP TABLE IF EXISTS detections CASCADE;")
+        db.flush()
+        db.commit()
+        logger.info("Tables dropped")
+
     if not inspect(engine).has_table("stat_checked_objects"):
         StatCheckedObjects.__table__.create(engine)
         tables_list.remove(StatCheckedObjects.__tablename__)
