@@ -1,6 +1,6 @@
 import json
 
-from kafka import KafkaConsumer, TopicPartition
+from kafka import KafkaConsumer
 
 from events_collector.config.config import settings
 
@@ -8,7 +8,6 @@ from events_collector.config.config import settings
 def start_consumer_services(
     *,
     boostrap_servers: str,
-    partition: int,
     **kwargs
 ) -> KafkaConsumer:
     """
@@ -21,12 +20,10 @@ def start_consumer_services(
     :return: обьект от AIOKafkaConsumer
     :rtype: `class: aiokafka.AIOKafkaConsumer`
     """
-    topic_partition = TopicPartition(settings.TOPIC_CONSUME_EVENTS, partition)
-    topics = [topic_partition]
     consumer = KafkaConsumer(
+        settings.TOPIC_CONSUME_EVENTS,
         bootstrap_servers=boostrap_servers,
         value_deserializer=lambda x: json.loads(x.decode('utf-8')),
         **kwargs
     )
-    consumer.assign(topics)
     return consumer

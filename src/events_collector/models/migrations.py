@@ -1,14 +1,30 @@
+from sqlalchemy import inspect
+from sqlalchemy.engine.base import Engine
+
 from events_collector.config.log_conf import logger
 from events_collector.models.base import SyncPostgresDriver
+from events_collector.models.models import StatCheckedObjects, StatMatchedObjects, Detections
 
 
-def apply_migrations():
-    with SyncPostgresDriver().session() as db:
-        db.execute('CREATE TABLE IF NOT EXISTS "indicators" ("id" SERIAL NOT NULL PRIMARY KEY, "type" types NOT NULL, "created_at" TIMESTAMP NOT NULL, "value" VARCHAR(256) NOT NULL, "context" JSONB NULL, "is_sending_to_detections" BOOLEAN DEFAULT TRUE, "is_false_positive" BOOLEAN DEFAULT FALSE, "weight" INTEGER NOT NULL DEFAULT 0, "is_archived" BOOLEAN DEFAULT TRUE, "false_detected_counter" INTEGER NOT NULL DEFAULT 0, "positive_detected_counter" INTEGER NOT NULL DEFAULT 0, "total_detected_counter" INTEGER NOT NULL DEFAULT 0, "first_detected_date" TIMESTAMP NULL, "last_detected_date" timestamp NULL, "updated_at" TIMESTAMP NOT NULL); ') # noqa
-        db.execute('CREATE TABLE IF NOT EXISTS "stat_checked_objects" ("id" SERIAL NOT NULL PRIMARY KEY, "created_at" TIMESTAMP NOT NULL);') # noqa
-        db.execute('CREATE TABLE IF NOT EXISTS "stat_matched_objects" ("id" SERIAL NOT NULL PRIMARY KEY, "created_at" TIMESTAMP NOT NULL, "indicator_id" INTEGER REFERENCES indicators(id));') # noqa
-        db.execute('CREATE TABLE IF NOT EXISTS "detections" ("id" SERIAL NOT NULL PRIMARY KEY, "created_at" TIMESTAMP NOT NULL, "source_event" JSONB NULL, "indicator_id" INTEGER REFERENCES indicators(id), "detection_event" TEXT NULL);') # noqa
+def create_migrations() -> None:
+    """Create migrations for Database"""
+    engine: Engine = SyncPostgresDriver()._engine
+    tables_list = [StatMatchedObjects.__tablename__, StatCheckedObjects.__tablename__, Detections.__tablename__]
 
-        db.flush()
-        db.commit()
-        logger.info("Migrations applied successfully...")
+    if not inspect(engine).has_table("stat_checked_objects"):
+        StatCheckedObjects.__table__.create(engine)
+        tables_list.remove(StatCheckedObjects.__tablename__)
+        logger.info("Table StatCheckedObjects created")
+
+    if not inspect(engine).has_table("stat_matched_objects") and inspect(engine).has_table("indicators"):
+        StatMatchedObjects.__table__.create(SyncPostgresDriver().engine)
+        tables_list.remove(StatMatchedObjects.__tablename__)
+        logger.info("Table StatMatchedObjects created")
+
+    if not inspect(engine).has_table("detections") and inspect(engine).has_table("indicators"):
+        tables_list.remove(Detections.__tablename__)
+        Detections.__table__.create(SyncPostgresDriver().engine)
+        logger.info("Table Detections created")
+
+    logger.info(f"List of unapplied tables: {tables_list}. Waiting for Indicators table to be applied")
+    logger.info("Migration applied successfully")
