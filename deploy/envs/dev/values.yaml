@@ -24,5 +24,7 @@ env:
   EVENTS_COLLECTOR_TOPIC: syslog
   ALLOW_ANONYMOUS_LOGIN: yes
   ALLOW_PLAINTEXT_LISTENER: yes
+  TOPIC_CONSUME_EVENTS: syslog
+  KAFKA_GROUP_ID: main
 
 strategyType: Recreate

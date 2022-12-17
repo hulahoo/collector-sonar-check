@@ -20,7 +20,8 @@ class AbstractConsumer(ABC):
                 self.consumer = start_consumer_services(
                     boostrap_servers=settings.KAFKA_BOOTSTRAP_SERVER,
                     group_id=settings.KAFKA_GROUP_ID,
-                    auto_offset_reset="earliest"
+                    auto_offset_reset="earliest",
+                    api_version=(0, 10, 1),
                 )
                 logger.info(f"Consumer: {self.consumer}")
             except Exception as e:  # noqa
