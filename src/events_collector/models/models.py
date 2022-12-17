@@ -1,7 +1,7 @@
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy import (
-    Column, Integer, String, ForeignKey, func, Text,
+    Column, Integer, String, func, Text,
     DateTime, Boolean, Enum, CheckConstraint,  BigInteger
 )
 
@@ -64,12 +64,12 @@ class StatCheckedObjects(IDBase, TimestampBase):
 class StatMatchedObjects(IDBase, TimestampBase):
     __tablename__ = "stat_matched_objects"
 
-    indicator_id = Column(BigInteger, ForeignKey("indicators.id"))
+    indicator_id = Column(BigInteger)
 
 
 class Detections(IDBase, TimestampBase):
     __tablename__ = "detections"
 
     source_event = Column(JSONB, default=None, nullable=True)
-    indicator_id = Column(BigInteger, ForeignKey("indicators.id"))
+    indicator_id = Column(BigInteger)
     detection_event = Column(Text, default=None, nullable=True)
