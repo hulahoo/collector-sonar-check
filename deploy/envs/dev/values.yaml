@@ -20,9 +20,10 @@ databases:
 
 env:
   KAFKA_BOOTSTRAP_SERVER: kafka.rshbdev.ru:9092
-  KAFKA_GROUP_ID: 1
   EVENTS_COLLECTOR_TOPIC: syslog
   ALLOW_ANONYMOUS_LOGIN: yes
   ALLOW_PLAINTEXT_LISTENER: yes
+  TOPIC_CONSUME_EVENTS: syslog
+  KAFKA_GROUP_ID: main
 
 strategyType: Recreate
