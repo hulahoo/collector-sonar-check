@@ -19,7 +19,6 @@ class AbstractConsumer(ABC):
             try:
                 self.consumer = start_consumer_services(
                     boostrap_servers=settings.KAFKA_BOOTSTRAP_SERVER,
-                    partition=self.partition,
                     group_id=settings.KAFKA_GROUP_ID,
                     auto_offset_reset="earliest"
                 )
