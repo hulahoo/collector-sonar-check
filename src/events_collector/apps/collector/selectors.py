@@ -40,7 +40,7 @@ class StatMatchedProvider:
 
 
 class DetectionsProvider:
-    def create(self, indicator_id: int, source_event: dict, detection_event: str) -> Detections:
+    def create(self, indicator_id: int, source_event: dict, detection_event: dict) -> Detections:
         with SyncPostgresDriver().session() as db:
             detection = Detections(
                 source_event=source_event,
