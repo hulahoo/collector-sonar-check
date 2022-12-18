@@ -64,7 +64,7 @@ def api_routes():
         "openapi:": "3.0.0",
         "info": {
             "title": "Событийный шлюз",
-            "version": "0.0.1",
+            "version": "0.3",
         },
         "paths": {}
         }
