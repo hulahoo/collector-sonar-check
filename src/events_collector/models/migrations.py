@@ -3,13 +3,28 @@ from sqlalchemy.engine.base import Engine
 
 from events_collector.config.log_conf import logger
 from events_collector.models.base import SyncPostgresDriver
-from events_collector.models.models import StatCheckedObjects, StatMatchedObjects, Detections
+from events_collector.models.models import (
+    StatCheckedObjects, StatMatchedObjects, Detections, DetectionTagRelationships
+)
 
 
 def create_migrations() -> None:
     """Create migrations for Database"""
     engine: Engine = SyncPostgresDriver()._engine
-    tables_list = [StatMatchedObjects.__tablename__, StatCheckedObjects.__tablename__, Detections.__tablename__]
+    tables_list = [
+        StatMatchedObjects.__tablename__, StatCheckedObjects.__tablename__,
+        Detections.__tablename__, DetectionTagRelationships.__tablename__
+    ]
+    with SyncPostgresDriver().session() as db:
+        db.execute("ALTER TABLE detections DROP COLUMN indicator_id")
+        db.execute("ALTER TABLE stat_matched_objects DROP COLUMN indicator_id")
+
+        db.execute("ALTER TABLE detections ADD COLUMN indicator_id UUID")
+        db.execute("ALTER TABLE stat_matched_objects ADD COLUMN indicator_id UUID")
+
+        db.flush()
+        db.commit()
+        logger.info("SUCCESS!")
 
     if not inspect(engine).has_table("stat_checked_objects"):
         StatCheckedObjects.__table__.create(engine)
@@ -25,6 +40,11 @@ def create_migrations() -> None:
         tables_list.remove(Detections.__tablename__)
         Detections.__table__.create(engine)
         logger.info("Table Detections created")
+
+    if not inspect(engine).has_table("detection_tag_relationships"):
+        tables_list.remove(DetectionTagRelationships.__tablename__)
+        DetectionTagRelationships.__table__.create(engine)
+        logger.info("Table DetectionTagRelationships created")
 
     logger.info(f"Tables already exists: {tables_list}")
     logger.info("Migration applied successfully")

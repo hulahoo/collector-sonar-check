@@ -1,8 +1,8 @@
 from sqlalchemy.orm import relationship, backref
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy import (
-    Column, Integer, String, func, Text,
-    DateTime, Boolean, Enum, CheckConstraint,  BigInteger
+    Column, Integer, String, func, BigInteger,
+    DateTime, Boolean, Enum, CheckConstraint
 )
 
 from events_collector.commons.enums import TypesEnum
@@ -64,12 +64,19 @@ class StatCheckedObjects(IDBase, TimestampBase):
 class StatMatchedObjects(IDBase, TimestampBase):
     __tablename__ = "stat_matched_objects"
 
-    indicator_id = Column(BigInteger)
+    indicator_id = Column(UUID(as_uuid=True))
 
 
 class Detections(IDBase, TimestampBase):
     __tablename__ = "detections"
 
     source_event = Column(JSONB, default=None, nullable=True)
-    indicator_id = Column(BigInteger)
-    detection_event = Column(Text, default=None, nullable=True)
+    indicator_id = Column(UUID(as_uuid=True))
+    detection_event = Column(JSONB, default=None, nullable=True)
+
+
+class DetectionTagRelationships(IDBase, TimestampBase):
+    __tablename__ = "detection_tag_relationships"
+
+    detection_id = Column(BigInteger)
+    tag_id = Column(BigInteger)
