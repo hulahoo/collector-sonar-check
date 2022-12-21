@@ -12,7 +12,8 @@ class IndicatorProvider:
             query = select(Indicator).filter(
                 and_(
                     Indicator.type == type,
-                    Indicator.value == value
+                    Indicator.value == value,
+                    Indicator.is_archived.is_(False)
                 )
             ).order_by(desc(Indicator.created_at))
             indicators = db.execute(query)
