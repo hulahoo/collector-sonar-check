@@ -6,6 +6,8 @@ class Settings(BaseSettings):
     KAFKA_BOOTSTRAP_SERVER: str = "kafka:9092"
     TOPIC_CONSUME_EVENTS: str = ""
     KAFKA_GROUP_ID: str = "collector"
+    CSRF_ENABLED: bool = True
+    SESSION_COOKIE_SECURE: bool = True
 
     APP_POSTGRESQL_HOST: str = "localhost"
     APP_POSTGRESQL_PASSWORD: str = "password"
