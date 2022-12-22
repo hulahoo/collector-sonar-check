@@ -7,11 +7,12 @@ install_requires = [
     ('pydantic', '1.10.2'),
     ('python-dotenv', '0.21.0'),
     ('psycopg2-binary', '2.9.5'),
+    ('sqlalchemy', '1.4.44'),
     ('stix2-elevator', '4.1.7'),
     ('stix2', '3.0.1'),
-    ('alembic', '1.8.1'),
     ('Flask', '1.1.2'),
     ('Flask-WTF', '1.0.1'),
+    ('flask-cors', '3.0.10'),
     ('prometheus-client', '0.15.0')
 ]
 

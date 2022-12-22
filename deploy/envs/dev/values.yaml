@@ -1,6 +1,7 @@
 psvc:
   name: Сервис Сборщика событий
   description: Сервис для сборки событий
+  publishAPI: true
 
 replicaCount: 1
 
@@ -20,10 +21,9 @@ databases:
 
 env:
   KAFKA_BOOTSTRAP_SERVER: kafka.rshbdev.ru:9092
-  EVENTS_COLLECTOR_TOPIC: syslog
+  KAFKA_GROUP_ID: main
+  TOPIC_CONSUME_EVENTS: syslog
   ALLOW_ANONYMOUS_LOGIN: yes
   ALLOW_PLAINTEXT_LISTENER: yes
-  TOPIC_CONSUME_EVENTS: syslog
-  KAFKA_GROUP_ID: main
 
 strategyType: Recreate

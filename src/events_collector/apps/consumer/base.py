@@ -2,8 +2,8 @@ import sys
 import json
 import traceback
 
-from events_collector.apps.collector.services import event_matching
 from events_collector.config.log_conf import logger
+from events_collector.apps.collector.services import EventsHandler
 from events_collector.apps.consumer.abstract import AbstractConsumer
 
 
@@ -16,16 +16,13 @@ class BaseConsumer(AbstractConsumer):
     def process_handler_service(self):
         logger.info("Start process services...")  # noqa
 
-        for event in self.consumer.poll(timeout_ms=5000):
-            message = json.loads(event.value)
+        for message in self.consumer.poll(timeout_ms=5000):
+            event = json.loads(message.value)
             try:
-                context_config = self.context.op_config["config"]
-                config = dict() if context_config is None else context_config
+                logger.info(f'Incoming events fromm is: {message.topic}')
 
-                logger.info(f"Incoming config is: {config}")
-                logger.info(f'Incoming events fromm is: {event.topic}')
-
-                event_matching(event=event)
+                handler = EventsHandler(event=event)
+                handler.check_event_matching()
 
             except Exception as e:
                 exc_info = sys.exc_info()
