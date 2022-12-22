@@ -11,7 +11,7 @@ class IndicatorProvider:
         with SyncPostgresDriver().session() as db:
             query = select(Indicator).filter(
                 and_(
-                    Indicator.type == type,
+                    Indicator.ioc_type == type,
                     Indicator.value == value,
                     Indicator.is_archived.is_(False)
                 )

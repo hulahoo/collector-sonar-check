@@ -1,11 +1,20 @@
-from flask import Flask
+import os
+
+from flask import Flask, request
 from flask_wtf.csrf import CSRFProtect
+from flask_cors import CORS, cross_origin
 
 from events_collector.config.log_conf import logger
+from events_collector.apps.collector.services import EventsHandler
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 
 app = Flask(__name__)
+
+SECRET_KEY = os.urandom(32)
+app.config['SECRET_KEY'] = SECRET_KEY
+CORS(app)
+
 csrf = CSRFProtect()
 csrf.init_app(app)
 
@@ -68,3 +77,17 @@ def api_routes():
         },
         "paths": {}
         }
+
+
+@app.route("/api/force-update", methods=["POST"])
+@cross_origin()
+def force_update():
+    incoming_data = request.get_json()
+    logger.info(f"REQUEST IS: {type(incoming_data)}")
+    handler = EventsHandler(event=incoming_data.get("data").get("feed"))
+    handler.check_event_matching()
+    return app.response_class(
+        response={"status": "FINISHED"},
+        status=200,
+        mimetype=mimetype
+    )

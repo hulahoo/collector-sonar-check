@@ -12,13 +12,17 @@ class FormatsHandler:
 
     def json_event_matching(self, *, event: dict):
         event_key: str = self.filter_event_format_type(event=event)
-        event_parent_key: dict = event.get(event_key, {})
-        event_type: str = event_parent_key.get(event_parent_key, {})
+        event_parent_key: dict = event.get(event_key, None)
+        event_type: str = event_parent_key.get(event_key, None)
+        logger.info(f"Event key; {event_key}")
+        logger.info(f"Event parent key; {event_parent_key}")
+        logger.info(f"Event type: {event_type}")
 
         indicator: Optional[Indicator] = indicator_selector.get_by_type_and_value(
             type=event_key,
             value=event_type,
         )
+        logger.info(f"Indicator found {indicator}")
         if indicator:
             logger.info("Matched found. Create Detection")
 
@@ -89,8 +93,11 @@ class FormatsHandler:
 
     @staticmethod
     def filter_event_format_type(*, event: dict) -> str:
-        for key in event:
+        logger.info(f"Event to filter: {event}")
+        keys = event.keys()
+        for key in keys:
             if key in TYPE_LIST:
+                logger.info(f"Key found: {key}")
                 return key
 
     @staticmethod
@@ -122,6 +129,7 @@ class EventsHandler:
                 logger.error("No appropriate format found")
                 return
             else:
+                logger.info(f"Found handler: {format_handler.__name__}")
                 format_handler(event=self.event)
         except Exception as e:
             logger.error(f"Error occured: {e}")
