@@ -1,40 +1,143 @@
 # events-collector
 
-Сервис создан для импорта внешних ресурсов Threat Intelligence.
+Сервис создан для чтения сообщений из Kafka и матчингом с подходящим индикатором.
 
-### Запуск воркера 
+### Информация о файлах конфигурации
 
-- Скопируйте данный репозиторий
-
-Запустите локальный сервер (только для разработки, будет использована sqlite БД)
-
-- dagit -f main.py появится веб интерфейс и по нему нужно будет перейти и запустить
-
-* (config)
-
-```yaml
-ops:
-  consumer_dispatcher_op:
-    config:
-      partitions: [ 1,2,3 ]
+- Все конфигурции можно найти в директории:
+```
+src/events_collector/config
 ```
 
 ## Информаци о ENV-параметрах
 Имеющиеся env-параметры в проекте:
-    ```
-    KAFKA_BOOTSTRAP_SERVER=""  # хост на котором расположена кафка
-    KAFKA_GROUP_ID=""  # груп id кафки  
+    ```env
+    KAFKA_BOOTSTRAP_SERVER=""
+    KAFKA_GROUP_ID=""
     TOPIC_CONSUME_EVENTS=""
-    POSTGRES_SERVER=""
-    POSTGRES_PASSWORD=""
-    POSTGRES_USER=""
-    POSTGRES_DB=""
-    POSTGRES_PORT=""
+    APP_POSTGRESQL_HOST=""
+    APP_POSTGRESQL_PASSWORD=""
+    APP_POSTGRESQL_USER=""
+    APP_POSTGRESQL_NAME=""
+    APP_POSTGRESQL_PORT=""
     ```
-  
 
-## Информация о файлах конфигурации
-Все конфигурции можно найти в директории:
+### Локальный запуск
+
+Для запуска приложения локально нужно:
+
+1. Создать виртуальное окружение:
+```bash
+python3 -m venv venv
 ```
-  src/apps/config
+
+2. Активировать виртуальное окружение:
+```bash
+source venv/bin/activate
+```
+
+3. Установить зависимости:
+```bash
+pip3 install -r requirements.txt
+```
+
+4. Собрать приложение как модуль:
+```bash
+python3 -m pip install .
+```
+
+5. Запустить приложение:
+```bash
+events-collector
+```
+
+### Запуск с помощью докера
+1. Dockerfile:
+```dockerfile
+FROM python:3.10.8-slim as deps
+WORKDIR /app
+COPY . ./
+RUN apt-get update -y && apt-get -y install gcc python3-dev
+RUN pip --no-cache-dir install -r requirements.txt 
+RUN pip --no-cache-dir install -r requirements.setup.txt 
+RUN pip install -e .
+
+FROM deps as build
+ARG ARTIFACT_VERSION=local
+RUN python setup.py sdist bdist_wheel
+RUN ls -ll /app/
+RUN ls -ll /app/dist/
+
+
+FROM python:3.10.8-slim as runtime
+COPY --from=build /app/dist/*.whl /app/
+RUN apt-get update -y && apt-get -y install gcc python3-dev
+RUN pip --no-cache-dir install /app/*.whl
+ENTRYPOINT ["events-collector"]
+```
+
+2. docker-compose.yml
+```yaml
+version: '3'
+
+
+services:
+  zookeeper:
+    image: wurstmeister/zookeeper
+    ports:
+      - "2181:2181"
+  kafka:
+    image: wurstmeister/kafka:latest
+    ports:
+      - target: 9094
+        published: 9094
+        protocol: tcp
+        mode: host
+    environment:
+      HOSTNAME_COMMAND: "docker info | grep ^Name: | cut -d' ' -f 2"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INSIDE:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: INSIDE://:9092,OUTSIDE://_{HOSTNAME_COMMAND}:9094
+      KAFKA_LISTENERS: INSIDE://:9092,OUTSIDE://:9094
+      KAFKA_INTER_BROKER_LISTENER_NAME: INSIDE
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  postgres_db:
+    image: postgres:13.8-alpine
+    container_name: db
+    restart: unless-stopped
+    expose:
+      - 5432 
+    environment:
+      POSTGRES_DB: db
+      POSTGRES_USER: dbuser
+      POSTGRES_PASSWORD: test
+
+  collector:
+    restart: always
+    build: ./
+    ports:
+    - "8080:8080"
+    environment:
+      KAFKA_BOOTSTRAP_SERVER: kafka:9092
+      TOPIC_CONSUME_EVENTS: syslog
+      KAFKA_GROUP_ID: main
+      APP_POSTGRESQL_USER: dbuser
+      APP_POSTGRESQL_PASSWORD: test
+      APP_POSTGRESQL_NAME: db
+      APP_POSTGRESQL_HOST: postgres_db
+      APP_POSTGRESQL_PORT: 5432
+    depends_on:
+      - postgres_db
+
+ 
+networks:
+    external:
+      name: kafka_net
+```
+
+3. Запуск контейнеров:
+```bash
+docker-compose up --build
 ```

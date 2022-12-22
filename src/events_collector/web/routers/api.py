@@ -13,6 +13,8 @@ app = Flask(__name__)
 
 SECRET_KEY = os.urandom(32)
 app.config['SECRET_KEY'] = SECRET_KEY
+app.config["SESSION_COOKIE_SECURE"] = False
+app.config['WTF_CSRF_ENABLED'] = False
 
 csrf = CSRFProtect()
 csrf.init_app(app)
