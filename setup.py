@@ -13,6 +13,7 @@ install_requires = [
     ('alembic', '1.8.1'),
     ('Flask', '1.1.2'),
     ('Flask-WTF', '1.0.1'),
+    ('flask-cors', '3.0.10'),
     ('prometheus-client', '0.15.0')
 ]
 
