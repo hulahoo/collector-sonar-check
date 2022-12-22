@@ -12,10 +12,12 @@ class FormatsHandler:
 
     def json_event_matching(self, *, event: dict):
         event_key: str = self.filter_event_format_type(event=event)
-        event_parent_key: dict = event.get(event_key, None)
-        event_type: str = event_parent_key.get(event_key, None)
         logger.info(f"Event key; {event_key}")
+
+        event_parent_key: dict = event.get(event_key, None)
         logger.info(f"Event parent key; {event_parent_key}")
+
+        event_type: str = event_parent_key.get(event_key, None)
         logger.info(f"Event type: {event_type}")
 
         indicator: Optional[Indicator] = indicator_selector.get_by_type_and_value(

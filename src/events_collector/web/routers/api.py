@@ -2,7 +2,7 @@ import os
 
 from flask import Flask, request
 from flask_wtf.csrf import CSRFProtect
-from flask_cors import CORS, cross_origin
+from flask_cors import cross_origin
 
 from events_collector.config.log_conf import logger
 from events_collector.apps.collector.services import EventsHandler
@@ -13,7 +13,6 @@ app = Flask(__name__)
 
 SECRET_KEY = os.urandom(32)
 app.config['SECRET_KEY'] = SECRET_KEY
-CORS(app)
 
 csrf = CSRFProtect()
 csrf.init_app(app)

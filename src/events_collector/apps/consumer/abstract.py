@@ -24,8 +24,8 @@ class AbstractConsumer(ABC):
                     api_version=(0, 10, 1),
                 )
                 logger.info(f"Consumer: {self.consumer}")
-            except Exception as e:  # noqa
-                logger.exception("Error in creating consumer")
+            except Exception as e:
+                logger.error(f"Error in creating consumer: {e}")
 
     @abstractmethod
     def start_process(self):
