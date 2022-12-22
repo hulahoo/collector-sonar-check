@@ -1,6 +1,7 @@
 psvc:
   name: Сервис Сборщика событий
   description: Сервис для сборки событий
+  publishAPI: true
 
 replicaCount: 1
 
