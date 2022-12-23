@@ -7,11 +7,10 @@ from events_collector.models.models import Indicator, StatCheckedObjects, StatMa
 
 
 class IndicatorProvider:
-    def get_by_type_and_value(self, *, type: str, value: Optional[str]) -> Optional[Indicator]:
+    def get_by_type_and_value(self, *, value: Optional[str]) -> Optional[Indicator]:
         with SyncPostgresDriver().session() as db:
             query = select(Indicator).filter(
                 and_(
-                    Indicator.ioc_type == type,
                     Indicator.value == value,
                     Indicator.is_archived.is_(False)
                 )
