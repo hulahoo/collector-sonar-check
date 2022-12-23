@@ -138,7 +138,7 @@ class EventsHandler:
     def check_event_matching(self):
         stat_checked_selector.create()
         try:
-            format_handler = self.choose_format(
+            format_handler: Callable = self.choose_format(
                 event_type=self.event.get("format_of_feed", "JSON")
             )
             if format_handler is None:
