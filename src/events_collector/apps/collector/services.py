@@ -1,7 +1,8 @@
+import json
 from typing import Dict, Optional, Callable, Union
 
 from events_collector.config.log_conf import logger
-from events_collector.commons.enums import TYPE_LIST
+from events_collector.commons.enums import TYPE_LIST, TypesEnum
 from events_collector.models.models import Detections, Indicator
 from events_collector.apps.collector.selectors import (
     stat_checked_selector, detections_selector, indicator_selector, stat_matched_selector
@@ -20,22 +21,20 @@ class FormatsHandler:
         event_type: str = event_parent_key.get(event_key, None)
         logger.info(f"Event type: {event_type}")
 
-        indicator: Optional[Indicator] = indicator_selector.get_by_type_and_value(
-            type=event_key,
-            value=event_type,
-        )
+        indicator: Optional[Indicator] = indicator_selector.get_by_type_and_value(value=event_type)
         logger.info(f"Indicator found {indicator}")
         if indicator:
-            logger.info("Matched found. Create Detection")
+            self.create_matched_object(indicator_id=indicator.id)
+            logger.info("Matched found. Increase matched count")
 
             detection = self.create_detection(
                 event=event,
+                event_key=event_key,
                 indicator_id=indicator.id,
                 indicator_weight=indicator.weight,
                 indicator_context=indicator.context,
             )
             logger.info(f"Created detection: {detection}")
-            self.create_matched_object(indicator_id=indicator.id)
         else:
             logger.info("No matched found.")
 
@@ -43,19 +42,26 @@ class FormatsHandler:
         self,
         *,
         event: dict,
+        event_key: str,
         indicator_id: int,
         indicator_weight: int,
         indicator_context: dict,
     ) -> Detections:
         detection_event = self.create_detection_format(
             event=event,
+            event_key=event_key,
             indicator_weight=indicator_weight,
             indicator_context=indicator_context,
         )
+        source_event_json = json.dumps(event, ensure_ascii=False, default=str)
+        logger.info(f"Parsed source event: {source_event_json}")
+
+        detection_event_json = json.dumps(detection_event, ensure_ascii=False, default=str)
+        logger.info(f"Parsed detection event: {detection_event_json}")
         detection = detections_selector.create(
-            source_event=event,
+            source_event=source_event_json,
             indicator_id=indicator_id,
-            detection_event=detection_event
+            detection_event=detection_event_json
         )
         return detection
 
@@ -63,30 +69,35 @@ class FormatsHandler:
         self,
         *,
         event: dict,
+        event_key: str,
         indicator_weight: int,
         indicator_context: dict,
     ) -> Dict[str, Union[str, dict]]:
         detection = dict()
         logger.info(f"Received event: {event}. Creating detection event")
         filtered_pairs = self.get_event_values(event=event)
-        detection["src"] = filtered_pairs.get("Source_IP")
-        detection["src_port"] = filtered_pairs.get("Source_port")
-        detection["dst"] = filtered_pairs.get("Destination")
-        detection["dstPort"] = filtered_pairs.get("Destination_port")
-        detection["username"] = filtered_pairs.get("User_name")
-        detection["url"] = filtered_pairs.get("URL")
-        detection["url_domain"] = filtered_pairs.get("URL_domain")
-        detection["event_name"] = filtered_pairs.get("Event_name")
-        detection["log_source_identifier"] = filtered_pairs.get("Log_source_identifier")
-        detection["log_source_type"] = filtered_pairs.get("Log_source_type")
-        detection["src_asset_name"] = filtered_pairs.get("Log_source")
-        detection["src_net_name"] = filtered_pairs.get("Source_Net_Name")
-        detection["domain"] = filtered_pairs.get("URL_domain")
+        logger.info(f"filtered: {filtered_pairs}")
+        detection["src"] = filtered_pairs.get("src")
+        detection["src_port"] = filtered_pairs.get("srcPort")
+        detection["dst"] = filtered_pairs.get("dst")
+        detection["dstPort"] = filtered_pairs.get("dstPort")
+        detection["username"] = filtered_pairs.get("username")
+        detection["event_name"] = filtered_pairs.get("eventName")
+        detection["log_source_identifier"] = filtered_pairs.get("logSourceIdentifier")
+        detection["log_source_type"] = filtered_pairs.get("logSourceType")
+        detection["src_net_name"] = filtered_pairs.get("srcNetName")
         detection["context"] = dict()
         detection["context"]["ioc_weight"] = indicator_weight
         detection["context"]["ioc_context"] = indicator_context
         detection["context"]["source_id"] = filtered_pairs.get("Source_Id", "default")
-        detection["event_code"] = filtered_pairs.get("Event_code")
+        detection["event_code"] = filtered_pairs.get("event_code")
+
+        if event_key == TypesEnum.URL.value:
+            detection["domain"] = filtered_pairs.get("URL_domain")
+            detection["url_domain"] = filtered_pairs.get("URL_domain")
+            detection["url"] = filtered_pairs.get("URL")
+        if event_key == TypesEnum.IP.value:
+            detection["ip"] = filtered_pairs.get("IP")
         return detection
 
     @staticmethod
@@ -105,8 +116,11 @@ class FormatsHandler:
     @staticmethod
     def get_event_values(*, event: dict) -> Dict[str, str]:
         filtered_values = dict()
-        for parent_key, value in event.get("feed"):
-            filtered_values[parent_key] = value[parent_key]
+        for _, value in event.items():
+            try:
+                filtered_values.update(value)
+            except Exception as e:
+                logger.info(f"Filtering finished: {e}")
         return filtered_values
 
 
