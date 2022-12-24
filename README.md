@@ -141,3 +141,10 @@ networks:
 ```bash
 docker-compose up --build
 ```
+
+4. Применить дамп файла для бд в контейнере:
+```bash
+cat restore.sql | docker exec -i db psql -U dbuser -d db
+```
+
+5. Перзапустить контейнер worker
