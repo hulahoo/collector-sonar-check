@@ -85,11 +85,12 @@ def api_routes():
 @app.route("/api/force-update", methods=["POST"])
 @cross_origin(origins=["0.0.0.0"], methods=["POST", "OPTIONS"])
 def force_update():
-    bytes_of_incoming_data = request.get_data()
-    incoming_event_str: str = bytes_of_incoming_data.decode("utf-8")
-    incoming_event: dict = json.loads(incoming_event_str)
-    logger.info(f"Incoming request: {incoming_event}")
-    handler = EventsHandler(event=incoming_event.get("data").get("feed"))
+    incoming_data: dict = json.loads(request.get_data(as_text=True))
+    logger.info(f"Incoming request: {incoming_data}")
+    handler = EventsHandler(
+        event=incoming_data.get("data").get("feed"),
+        source_message=incoming_data.get("data").pop("source_message")
+    )
     handler.check_event_matching()
     return app.response_class(
         response={"status": "FINISHED"},

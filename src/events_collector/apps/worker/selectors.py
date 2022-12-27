@@ -1,3 +1,5 @@
+from decimal import Decimal
+from uuid import UUID
 from typing import Optional
 
 from sqlalchemy import select, desc, and_
@@ -40,10 +42,22 @@ class StatMatchedProvider:
 
 
 class DetectionsProvider:
-    def create(self, indicator_id: int, source_event: dict, detection_event: dict) -> Detections:
+    def create(
+        self,
+        source_event: dict,
+        source_message: str,
+        indicator_weight: Decimal,
+        tags_weight: Decimal,
+        indicator_id: UUID,
+        detection_event: dict
+    ) -> Detections:
         with SyncPostgresDriver().session() as db:
             detection = Detections(
                 source_event=source_event,
+                source_message=source_message,
+                indicator_weight=indicator_weight,
+                tags_weight=tags_weight,
+                detection_message=str(detection_event),
                 indicator_id=indicator_id,
                 detection_event=detection_event
             )
