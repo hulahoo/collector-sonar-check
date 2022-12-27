@@ -1,9 +1,8 @@
 import threading
 
 from events_collector.config.log_conf import logger
-from events_collector.models.migrations import create_migrations
 from events_collector.web.routers.api import execute as flask_app
-from events_collector.apps.collector.events_handler import events_hadler
+from events_collector.apps.worker.events_handler import events_hadler
 
 
 def execute() -> None:
@@ -13,10 +12,11 @@ def execute() -> None:
     2. Flask application to serve enpoints
     3. Apply migrations
     """
-    create_migrations()
-
-    logger.info("Start consumer...")
     flask_thread = threading.Thread(target=flask_app)
     collector_thread = threading.Thread(target=events_hadler)
+
+    logger.info("Start Flask app")
     flask_thread.start()
+
+    logger.info("Start worker")
     collector_thread.start()

@@ -4,8 +4,9 @@ from pydantic import BaseSettings
 class Settings(BaseSettings):
 
     KAFKA_BOOTSTRAP_SERVER: str = "kafka:9092"
-    TOPIC_CONSUME_EVENTS: str = ""
-    KAFKA_GROUP_ID: str = "collector"
+    TOPIC_CONSUME_EVENTS: str = "collector"
+    KAFKA_GROUP_ID: str = "main"
+    TOPIC_TO_EXPORT_EVENTS: str = "collector"
     CSRF_ENABLED: bool = True
     SESSION_COOKIE_SECURE: bool = True
 

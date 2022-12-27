@@ -2,9 +2,11 @@ import json
 from typing import Dict, Optional, Callable, Union
 
 from events_collector.config.log_conf import logger
+from events_collector.config.config import settings
 from events_collector.commons.enums import TYPE_LIST, TypesEnum
 from events_collector.models.models import Detections, Indicator
-from events_collector.apps.collector.selectors import (
+from events_collector.apps.producer.sender import producer_entrypoint
+from events_collector.apps.worker.selectors import (
     stat_checked_selector, detections_selector, indicator_selector, stat_matched_selector
 )
 
@@ -62,6 +64,11 @@ class FormatsHandler:
             source_event=source_event_json,
             indicator_id=indicator_id,
             detection_event=detection_event_json
+        )
+        logger.info("Sending detection to export.")
+        producer_entrypoint(
+            message_to_send=detection_event_json,
+            topic=settings.TOPIC_TO_EXPORT_EVENTS
         )
         return detection
 
