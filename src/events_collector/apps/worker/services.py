@@ -1,4 +1,6 @@
 import json
+from uuid import UUID
+from decimal import Decimal
 from typing import Dict, Optional, Callable, Union
 
 from events_collector.config.log_conf import logger
@@ -13,7 +15,7 @@ from events_collector.apps.worker.selectors import (
 
 class FormatsHandler:
 
-    def json_event_matching(self, *, event: dict):
+    def json_event_matching(self, *, event: dict, source_message: str):
         event_key: str = self.filter_event_format_type(event=event)
         logger.info(f"Event key; {event_key}")
 
@@ -31,6 +33,8 @@ class FormatsHandler:
 
             detection = self.create_detection(
                 event=event,
+                source_message=source_message,
+                tags_weight=indicator.tags_weight,
                 event_key=event_key,
                 indicator_id=indicator.id,
                 indicator_weight=indicator.weight,
@@ -45,8 +49,10 @@ class FormatsHandler:
         *,
         event: dict,
         event_key: str,
-        indicator_id: int,
-        indicator_weight: int,
+        indicator_id: UUID,
+        source_message: str,
+        tags_weight: Decimal,
+        indicator_weight: Decimal,
         indicator_context: dict,
     ) -> Detections:
         detection_event = self.create_detection_format(
@@ -62,6 +68,9 @@ class FormatsHandler:
         logger.info(f"Parsed detection event: {detection_event_json}")
         detection = detections_selector.create(
             source_event=source_event_json,
+            source_message=source_message,
+            indicator_weight=indicator_weight,
+            tags_weight=tags_weight,
             indicator_id=indicator_id,
             detection_event=detection_event_json
         )
@@ -132,8 +141,9 @@ class FormatsHandler:
 
 
 class EventsHandler:
-    def __init__(self, event: dict):
+    def __init__(self, event: dict, source_message: str):
         self.event = event
+        self.source_message = source_message
         self.format_handler = FormatsHandler()
 
     def choose_format(self, *, event_type: str) -> Optional[Callable]:
@@ -153,7 +163,7 @@ class EventsHandler:
                 return
             else:
                 logger.info(f"Found handler: {format_handler.__name__}")
-                format_handler(event=self.event)
+                format_handler(event=self.event, source_message=self.source_message)
         except Exception as e:
             logger.error(f"Error occured: {e}")
 
