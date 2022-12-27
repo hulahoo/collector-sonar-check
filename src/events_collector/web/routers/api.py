@@ -7,7 +7,7 @@ from flask_cors import cross_origin
 
 from events_collector.config.log_conf import logger
 from events_collector.config.config import settings
-from events_collector.apps.collector.services import EventsHandler
+from events_collector.apps.worker.services import EventsHandler
 from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 

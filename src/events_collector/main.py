@@ -2,7 +2,7 @@ import threading
 
 from events_collector.config.log_conf import logger
 from events_collector.web.routers.api import execute as flask_app
-from events_collector.apps.collector.events_handler import events_hadler
+from events_collector.apps.worker.events_handler import events_hadler
 
 
 def execute() -> None:

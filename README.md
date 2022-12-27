@@ -12,14 +12,16 @@ src/events_collector/config
 ## Информаци о ENV-параметрах
 Имеющиеся env-параметры в проекте:
     ```env
-    KAFKA_BOOTSTRAP_SERVER=""
-    KAFKA_GROUP_ID=""
-    TOPIC_CONSUME_EVENTS=""
-    APP_POSTGRESQL_HOST=""
-    APP_POSTGRESQL_PASSWORD=""
-    APP_POSTGRESQL_USER=""
-    APP_POSTGRESQL_NAME=""
-    APP_POSTGRESQL_PORT=""
+    KAFKA_BOOTSTRAP_SERVER=localhost:9092
+    KAFKA_GROUP_ID=main
+    TOPIC_CONSUME_EVENTS=consume
+    APP_POSTGRESQL_NAME=test_name
+    APP_POSTGRESQL_USER=user
+    APP_POSTGRESQL_PASSWORD=password
+    APP_POSTGRESQL_HOST=localhost
+    APP_POSTGRESQL_PORT=5432
+    CSRF_ENABLED=True
+    SESSION_COOKIE_SECURE=True
     ```
 
 ### Локальный запуск
@@ -50,6 +52,20 @@ python3 -m pip install .
 ```bash
 events-collector
 ```
+
+### Требования к инфраструктуре
+1. Минимальная версия Kafka:
+  ```yaml
+    wurstmeister/kafka:>=2.13-2.7.2
+  ```
+2. Минимальная версия Postgres:
+  ```yaml
+    postgres:>=14-alpine
+  ```
+3. Минимальная версия zookeper:
+  ```yaml
+    wurstmeister/zookeeper
+  ```
 
 ### Запуск с помощью докера
 1. Dockerfile:
@@ -103,16 +119,8 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
 
-  postgres_db:
-    image: postgres:13.8-alpine
-    container_name: db
-    restart: unless-stopped
-    expose:
-      - 5432 
-    environment:
-      POSTGRES_DB: db
-      POSTGRES_USER: dbuser
-      POSTGRES_PASSWORD: test
+  db:
+    image: db_image:staging
 
   collector:
     restart: always
@@ -126,10 +134,10 @@ services:
       APP_POSTGRESQL_USER: dbuser
       APP_POSTGRESQL_PASSWORD: test
       APP_POSTGRESQL_NAME: db
-      APP_POSTGRESQL_HOST: postgres_db
+      APP_POSTGRESQL_HOST: db
       APP_POSTGRESQL_PORT: 5432
     depends_on:
-      - postgres_db
+      - db
 
  
 networks:
@@ -147,4 +155,4 @@ docker-compose up --build
 cat restore.sql | docker exec -i db psql -U dbuser -d db
 ```
 
-5. Перзапустить контейнер worker
+5. Перзапустить контейнер collector
