@@ -3,7 +3,7 @@ import json
 import traceback
 
 from events_collector.config.log_conf import logger
-from events_collector.apps.collector.services import EventsHandler
+from events_collector.apps.worker.services import EventsHandler
 from events_collector.apps.consumer.abstract import AbstractConsumer
 
 
@@ -17,11 +17,11 @@ class BaseConsumer(AbstractConsumer):
         logger.info("Start process services...")  # noqa
 
         for message in self.consumer.poll(timeout_ms=5000):
-            event = json.loads(message.value)
+            event: dict = json.loads(message.value)
             try:
                 logger.info(f'Incoming events fromm is: {message.topic}')
 
-                handler = EventsHandler(event=event)
+                handler = EventsHandler(event=event.get("feed"))
                 handler.check_event_matching()
 
             except Exception as e:

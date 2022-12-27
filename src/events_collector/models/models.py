@@ -1,7 +1,7 @@
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy import (
-    Column, Integer, String, BigInteger,
-    DateTime, Boolean, DECIMAL, text
+    Column, String, BigInteger,
+    DateTime, Boolean, DECIMAL, text, UniqueConstraint
 )
 
 from events_collector.models.abstract import IDBase, TimestampBase
@@ -21,13 +21,15 @@ class Indicator(TimestampBase):
     time_weight = Column(DECIMAL)
     tags_weight = Column(DECIMAL)
     is_archived = Column(Boolean, default=False)
-    false_detected_counter = Column(Integer)
-    positive_detected_counter = Column(Integer)
-    total_detected_counter = Column(Integer)
+    false_detected_counter = Column(BigInteger)
+    positive_detected_counter = Column(BigInteger)
+    total_detected_counter = Column(BigInteger)
     first_detected_at = Column(DateTime)
     last_detected_at = Column(DateTime)
-    created_by = Column(Integer)
+    created_by = Column(BigInteger)
     updated_at = Column(DateTime)
+
+    UniqueConstraint(value, ioc_type, name='indicators_unique_value_type')
 
     def __str__(self):
         return f"{self.value}"
@@ -46,9 +48,10 @@ class StatMatchedObjects(IDBase, TimestampBase):
 class Detections(IDBase, TimestampBase):
     __tablename__ = "detections"
 
-    source_event = Column(JSONB, default=None, nullable=True)
+    source_event = Column(JSONB)
     indicator_id = Column(UUID(as_uuid=True))
-    detection_event = Column(JSONB, default=None, nullable=True)
+    detection_event = Column(JSONB)
+    tags_weight = Column(BigInteger)
 
 
 class DetectionTagRelationships(IDBase, TimestampBase):
