@@ -21,7 +21,10 @@ class BaseConsumer(AbstractConsumer):
             try:
                 logger.info(f'Incoming events fromm is: {message.topic}')
 
-                handler = EventsHandler(event=event.get("feed"))
+                handler = EventsHandler(
+                    event=event.get("feed"),
+                    source_message=event.pop("source_message")
+                )
                 handler.check_event_matching()
 
             except Exception as e:

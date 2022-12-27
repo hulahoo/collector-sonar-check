@@ -1,6 +1,6 @@
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy import (
-    Column, String, BigInteger,
+    Column, String, BigInteger, Text,
     DateTime, Boolean, DECIMAL, text, UniqueConstraint
 )
 
@@ -49,9 +49,12 @@ class Detections(IDBase, TimestampBase):
     __tablename__ = "detections"
 
     source_event = Column(JSONB)
+    source_message = Column(Text)
     indicator_id = Column(UUID(as_uuid=True))
     detection_event = Column(JSONB)
-    tags_weight = Column(BigInteger)
+    detection_message = Column(Text)
+    tags_weight = Column(DECIMAL)
+    indicator_weight = Column(DECIMAL)
 
 
 class DetectionTagRelationships(IDBase, TimestampBase):
