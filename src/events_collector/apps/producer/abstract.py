@@ -26,7 +26,7 @@ class BaseProducer(AbstractProducer):
 
     __slots__ = ("message_to_send", "topic", "producer")
 
-    def __init__(self, topic: str, message_to_send: dict):
+    def __init__(self, topic: str, message_to_send: str):
         self.producer = self._start_producer()
         self.message_to_send = message_to_send
         self.topic = topic
@@ -34,7 +34,7 @@ class BaseProducer(AbstractProducer):
     def _send_data(
         self,
         *,
-        data: dict,
+        data: str,
         topic: Union[List, str],
         producer: KafkaProducer,
     ) -> None:
@@ -42,7 +42,7 @@ class BaseProducer(AbstractProducer):
         Сервис для отправки сгенерированного сообщения в брокер
 
         :param data: данные для отправки(словарь)
-        :type data: `class: Dict[str, Any]`
+        :type data: `class: str`
         :param topic: топик куда данные будут отправлены
         :type topic: `class: Union[List, str]`
         """

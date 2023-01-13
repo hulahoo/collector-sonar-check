@@ -5,6 +5,7 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker, scoped_session
 
+
 from events_collector.config.config import settings
 
 
@@ -28,7 +29,6 @@ class Database(ABC):
     @contextmanager
     def session(self):
         session: Session = self._session_factory()
-
         try:
             yield session
         except Exception:
@@ -54,17 +54,6 @@ class SyncPostgresDriver(Database):
 
     def _init_session_factory(self):
         return scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=self._engine))
-
-    @contextmanager
-    def session(self):
-        session: Session = self._session_factory()
-        try:
-            yield session
-        except Exception:
-            session.rollback()
-            raise
-        finally:
-            session.close()
 
 
 metadata = MetaData(bind=SyncPostgresDriver()._engine)

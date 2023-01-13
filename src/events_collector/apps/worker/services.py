@@ -6,7 +6,7 @@ from typing import Dict, Optional, Callable, Union
 from events_collector.config.log_conf import logger
 from events_collector.config.config import settings
 from events_collector.commons.enums import TYPE_LIST, TypesEnum
-from events_collector.models.models import Detections, Indicator
+from events_collector.models.models import Detections, Indicator, StatCheckedObjects
 from events_collector.apps.producer.sender import producer_entrypoint
 from events_collector.apps.worker.selectors import (
     stat_checked_selector, detections_selector, indicator_selector, stat_matched_selector
@@ -14,6 +14,9 @@ from events_collector.apps.worker.selectors import (
 
 
 class FormatsHandler:
+
+    def __init__(self, stat_checked_object: StatCheckedObjects):
+        self.stat_checked_object = stat_checked_object
 
     def json_event_matching(self, *, event: dict, source_message: str):
         event_key: str = self.filter_event_format_type(event=event)
@@ -28,7 +31,13 @@ class FormatsHandler:
         indicator: Optional[Indicator] = indicator_selector.get_by_type_and_value(value=event_type)
         logger.info(f"Indicator found {indicator}")
         if indicator:
-            self.create_matched_object(indicator_id=indicator.id)
+            indicator_id = indicator.id
+            self.create_matched_object(indicator_id=indicator_id)
+            stat_checked_selector.update_field(
+                filter_data={"id": self.stat_checked_object.id},
+                col="indicator_id", val=indicator_id,
+                *["id"]
+            )
             logger.info("Matched found. Increase matched count")
 
             detection = self.create_detection(
@@ -64,7 +73,7 @@ class FormatsHandler:
         source_event_json = json.dumps(event, ensure_ascii=False, default=str)
         logger.info(f"Parsed source event: {source_event_json}")
 
-        detection_event_json = json.dumps(detection_event, ensure_ascii=False, default=str)
+        detection_event_json: str = json.dumps(detection_event, ensure_ascii=False, default=str)
         logger.info(f"Parsed detection event: {detection_event_json}")
         detection = detections_selector.create(
             source_event=source_event_json,
@@ -144,7 +153,7 @@ class EventsHandler:
     def __init__(self, event: dict, source_message: str):
         self.event = event
         self.source_message = source_message
-        self.format_handler = FormatsHandler()
+        self.format_handler = None
 
     def choose_format(self, *, event_type: str) -> Optional[Callable]:
         formats = {
@@ -153,7 +162,8 @@ class EventsHandler:
         return formats.get(event_type)
 
     def check_event_matching(self):
-        stat_checked_selector.create()
+        stat_checked_object = stat_checked_selector.create()
+        self.format_handler = FormatsHandler(stat_checked_object=stat_checked_object)
         try:
             format_handler: Callable = self.choose_format(
                 event_type=self.event.get("format_of_feed", "JSON")

@@ -2,16 +2,39 @@ from decimal import Decimal
 from uuid import UUID
 from typing import Optional
 
-from sqlalchemy import select, desc, and_
+from sqlalchemy.orm import Session
+from sqlalchemy import select, desc, and_, update
 
 from events_collector.models.base import SyncPostgresDriver
 from events_collector.models.models import Indicator, StatCheckedObjects, StatMatchedObjects, Detections
 
 
-class IndicatorProvider:
+class BaseProvider:
+
+    model = None
+
+    def update_field(self, filter_data, col, val, *fields):
+        with SyncPostgresDriver().session() as db:
+            db: Session
+            query = update(self.model).where(
+                *(
+                    getattr(self.model, field) == (
+                        filter_data.get(field) if isinstance(filter_data, dict) else getattr(filter_data, field)
+                    )
+                    for field in fields
+                )
+            ).values(**{col: val})
+            db.execute(query)
+            db.commit()
+
+
+class IndicatorProvider(BaseProvider):
+
+    model = Indicator
+
     def get_by_type_and_value(self, *, value: Optional[str]) -> Optional[Indicator]:
         with SyncPostgresDriver().session() as db:
-            query = select(Indicator).filter(
+            query = select(self.model).filter(
                 and_(
                     Indicator.value == value,
                     Indicator.is_archived.is_(False)
@@ -21,27 +44,36 @@ class IndicatorProvider:
             return indicators.scalars().first()
 
 
-class StatCheckedProvider:
+class StatCheckedProvider(BaseProvider):
+
+    model = StatCheckedObjects
+
     def create(self) -> StatCheckedObjects:
         with SyncPostgresDriver().session() as db:
-            checked_object = StatCheckedObjects()
-
+            checked_object = self.model()
             db.add(checked_object)
             db.flush()
             db.commit()
+            return checked_object
 
 
-class StatMatchedProvider:
+class StatMatchedProvider(BaseProvider):
+
+    model = StatMatchedObjects
+
     def create(self, indicator_id: int) -> StatMatchedObjects:
         with SyncPostgresDriver().session() as db:
-            matched_object = StatMatchedObjects(indicator_id=indicator_id)
-
+            matched_object = self.model(indicator_id=indicator_id)
             db.add(matched_object)
             db.flush()
             db.commit()
+            return matched_object
 
 
-class DetectionsProvider:
+class DetectionsProvider(BaseProvider):
+
+    model = Detections
+
     def create(
         self,
         source_event: dict,
@@ -52,7 +84,7 @@ class DetectionsProvider:
         detection_event: dict
     ) -> Detections:
         with SyncPostgresDriver().session() as db:
-            detection = Detections(
+            detection = self.model(
                 source_event=source_event,
                 source_message=source_message,
                 indicator_weight=indicator_weight,

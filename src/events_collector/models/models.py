@@ -38,6 +38,8 @@ class Indicator(TimestampBase):
 class StatCheckedObjects(IDBase, TimestampBase):
     __tablename__ = "stat_checked_objects"
 
+    indicator_id = Column(UUID(as_uuid=True), nullable=True)
+
 
 class StatMatchedObjects(IDBase, TimestampBase):
     __tablename__ = "stat_matched_objects"
