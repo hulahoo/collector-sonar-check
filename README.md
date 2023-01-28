@@ -11,18 +11,18 @@ src/events_collector/config
 
 ## Информаци о ENV-параметрах
 Имеющиеся env-параметры в проекте:
-    ```env
-    KAFKA_BOOTSTRAP_SERVER=localhost:9092
-    KAFKA_GROUP_ID=main
-    TOPIC_CONSUME_EVENTS=consume
-    APP_POSTGRESQL_NAME=test_name
-    APP_POSTGRESQL_USER=user
-    APP_POSTGRESQL_PASSWORD=password
-    APP_POSTGRESQL_HOST=localhost
-    APP_POSTGRESQL_PORT=5432
-    CSRF_ENABLED=True
-    SESSION_COOKIE_SECURE=True
-    ```
+```env
+KAFKA_BOOTSTRAP_SERVER=localhost:9092
+KAFKA_GROUP_ID=main
+TOPIC_CONSUME_EVENTS=consume
+APP_POSTGRESQL_NAME=test_name
+APP_POSTGRESQL_USER=user
+APP_POSTGRESQL_PASSWORD=password
+APP_POSTGRESQL_HOST=localhost
+APP_POSTGRESQL_PORT=5432
+CSRF_ENABLED=True
+SESSION_COOKIE_SECURE=True
+```
 
 ### Локальный запуск
 
