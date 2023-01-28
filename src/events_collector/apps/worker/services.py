@@ -1,6 +1,8 @@
+import time
 import json
 from uuid import UUID
 from decimal import Decimal
+from functools import wraps
 from typing import Dict, Optional, Callable, Union
 
 from events_collector.config.log_conf import logger
@@ -11,6 +13,21 @@ from events_collector.apps.producer.sender import producer_entrypoint
 from events_collector.apps.worker.selectors import (
     stat_checked_selector, detections_selector, indicator_selector, stat_matched_selector
 )
+
+
+def benchmark(fn):
+    @wraps(fn)
+    def with_profiling(*args, **kwargs):
+        logger.info(f"Profiling of: {fn.__name__} function")
+        start_time = time.time()
+        ret = fn(*args, **kwargs)
+
+        elapsed_time = time.time() - start_time
+
+        logger.info(f"{fn.__name__} finished in {elapsed_time}")
+
+        return ret
+    return with_profiling
 
 
 class FormatsHandler:
@@ -176,6 +193,3 @@ class EventsHandler:
                 format_handler(event=self.event, source_message=self.source_message)
         except Exception as e:
             logger.error(f"Error occured: {e}")
-
-    def __call__(self):
-        self.event_matching()

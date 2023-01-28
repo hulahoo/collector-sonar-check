@@ -18,12 +18,15 @@ class AbstractConsumer(ABC):
         if self.consumer is None:
             try:
                 self.consumer = start_consumer_services(
-                    boostrap_servers=settings.KAFKA_BOOTSTRAP_SERVER,
+                    bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVER,
                     group_id=settings.KAFKA_GROUP_ID,
+                    value_deserializer=self.val_desirializer,
                     auto_offset_reset="earliest",
                     api_version=(0, 10, 1),
                 )
                 logger.info(f"Consumer: {self.consumer}")
+                topics = self.consumer.topics()
+                logger.info(f"Registered topics: {topics}")
             except Exception as e:
                 logger.error(f"Error in creating consumer: {e}")
 
