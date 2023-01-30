@@ -49,8 +49,7 @@ class SyncPostgresDriver(Database):
         )
 
     def get_db_url(self):
-        return f"postgresql://{settings.APP_POSTGRESQL_USER}:{settings.APP_POSTGRESQL_PASSWORD}@" \
-                f"{settings.APP_POSTGRESQL_HOST}:{settings.APP_POSTGRESQL_PORT}/{settings.APP_POSTGRESQL_NAME}"
+        return f"postgresql://{settings.APP_POSTGRESQL_USER}:{settings.APP_POSTGRESQL_PASSWORD}@{settings.APP_POSTGRESQL_HOST}:{settings.APP_POSTGRESQL_PORT}/{settings.APP_POSTGRESQL_NAME}" # noqa
 
     def _init_session_factory(self):
         return scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=self._engine))

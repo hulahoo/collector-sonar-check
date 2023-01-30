@@ -13,13 +13,15 @@ class AbstractConsumer(ABC):
     ) -> None:
         self.consumer = self.create_consumer()
 
-    def create_consumer(self) -> None:
+    def create_consumer(self) -> KafkaConsumer:
         try:
             config = {
                 "bootstrap_servers": settings.KAFKA_BOOTSTRAP_SERVER,
                 "group_id": settings.KAFKA_GROUP_ID,
                 "value_deserializer": lambda x: json.loads(x.decode('utf-8')),
                 "auto_offset_reset": "earliest",
+                "enable_auto_commit": True,
+                "auto_commit_interval_ms": 1000,
                 "api_version": (0, 10, 1),
             }
             consumer = KafkaConsumer(
