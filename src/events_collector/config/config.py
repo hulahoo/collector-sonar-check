@@ -10,11 +10,11 @@ class Settings(BaseSettings):
     CSRF_ENABLED: bool = True
     SESSION_COOKIE_SECURE: bool = True
 
-    APP_POSTGRESQL_HOST: str = "localhost"
-    APP_POSTGRESQL_PASSWORD: str = "password"
-    APP_POSTGRESQL_USER: str = "username"
-    APP_POSTGRESQL_NAME: str = "db"
-    APP_POSTGRESQL_PORT: int = 5432
+    APP_POSTGRESQL_HOST: str
+    APP_POSTGRESQL_PASSWORD: str
+    APP_POSTGRESQL_USER: str
+    APP_POSTGRESQL_NAME: str
+    APP_POSTGRESQL_PORT: int
 
     class Config:
         env_file = "./.env"
