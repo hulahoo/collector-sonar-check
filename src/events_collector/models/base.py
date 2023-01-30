@@ -56,5 +56,5 @@ class SyncPostgresDriver(Database):
         return scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=self._engine))
 
 
-metadata = MetaData(bind=SyncPostgresDriver()._engine)
+metadata = MetaData(SyncPostgresDriver()._engine)
 Base = declarative_base(metadata=metadata)
