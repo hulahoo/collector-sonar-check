@@ -17,7 +17,7 @@ class BaseConsumer(AbstractConsumer):
         logger.info("Start process services...")  # noqa
 
         for message in self.consumer:
-            event: dict = json.loads(message.value)
+            event: dict = message.value
             try:
                 logger.info(f'Incoming events fromm is: {message.topic}')
 
