@@ -28,8 +28,6 @@ class AbstractConsumer(ABC):
                 **config
             )
             logger.info(f"Consumer: {self.consumer}")
-            topics = self.consumer.topics()
-            logger.info(f"Registered topics: {topics}")
             return consumer
         except Exception as e:
             logger.error(f"Error in creating consumer: {e}")
