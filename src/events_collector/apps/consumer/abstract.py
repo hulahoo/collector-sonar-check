@@ -13,7 +13,6 @@ class AbstractConsumer(ABC):
     ) -> None:
         self.consumer = self.create_consumer()
         self.val_desirializer = lambda x: json.loads(x.decode('utf-8'))
-        self.val_encoder = lambda x: json.dumps(x).encode('utf-8')
 
     def create_consumer(self) -> None:
         try:

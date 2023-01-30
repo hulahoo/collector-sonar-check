@@ -16,7 +16,7 @@ class BaseConsumer(AbstractConsumer):
     def process_handler_service(self):
         logger.info("Start process services...")  # noqa
 
-        for message in self.consumer:
+        for message in self.consumer.poll(timeout_ms=5000):
             event: dict = json.loads(message.value)
             try:
                 logger.info(f'Incoming events fromm is: {message.topic}')
