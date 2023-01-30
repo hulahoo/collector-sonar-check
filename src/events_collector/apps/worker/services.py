@@ -192,7 +192,8 @@ class EventsHandler:
                 logger.error("No appropriate format found")
                 return
             else:
+                match: Callable = format_handler(event=self.event, source_message=self.source_message)
                 logger.info(f"Found handler: {format_handler.__name__}")
-                format_handler(event=self.event, source_message=self.source_message)
+                match()
         except Exception as e:
             logger.error(f"Error occured: {e}")
