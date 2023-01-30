@@ -32,12 +32,14 @@ class IndicatorProvider(BaseProvider):
 
     model = Indicator
 
-    def get_by_type_and_value(self, *, value: Optional[str]) -> Optional[Indicator]:
+    def get_by_value(self, *, value: Optional[str]) -> Optional[Indicator]:
         with SyncPostgresDriver().session() as db:
             query = select(self.model).filter(
                 and_(
                     Indicator.value == value,
-                    Indicator.is_archived.is_(False)
+                    Indicator.is_archived.is_not(True),
+                    Indicator.is_false_positive.is_not(True),
+                    Indicator.is_sending_to_detections.is_not(False)
                 )
             ).order_by(desc(Indicator.created_at))
             indicators = db.execute(query)

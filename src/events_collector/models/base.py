@@ -1,12 +1,15 @@
 from abc import abstractmethod, ABC
 from contextlib import contextmanager
 
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker, scoped_session
 
 
 from events_collector.config.config import settings
+
+
+Base = declarative_base()
 
 
 class Database(ABC):
@@ -54,6 +57,3 @@ class SyncPostgresDriver(Database):
     def _init_session_factory(self):
         return scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=self._engine))
 
-
-metadata = MetaData(SyncPostgresDriver()._engine)
-Base = declarative_base(metadata=metadata)
