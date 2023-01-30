@@ -36,7 +36,7 @@ class JsonFormatsHandler:
         self.event = event
         self.source_message = source_message
 
-    def json_event_matching(self):
+    def event_matching(self):
         event_key: str = self.filter_event_format_type(event=self.event)
         logger.info(f"Event key; {event_key}")
 
@@ -165,6 +165,9 @@ class JsonFormatsHandler:
             except Exception as e:
                 logger.info(f"Filtering finished: {e}")
         return filtered_values
+    
+    def __call__(self, *args, **kwds):
+        self.event_matching()
 
 
 class EventsHandler:
