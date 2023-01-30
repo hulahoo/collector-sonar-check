@@ -12,14 +12,13 @@ class AbstractConsumer(ABC):
         self
     ) -> None:
         self.consumer = self.create_consumer()
-        self.val_desirializer = lambda x: json.loads(x.decode('utf-8'))
 
     def create_consumer(self) -> None:
         try:
             config = {
                 "bootstrap_servers": settings.KAFKA_BOOTSTRAP_SERVER,
                 "group_id": settings.KAFKA_GROUP_ID,
-                "value_deserializer": self.val_desirializer,
+                "value_deserializer": lambda x: json.loads(x.decode('utf-8')),
                 "auto_offset_reset": "earliest",
                 "api_version": (0, 10, 1),
             }
@@ -27,7 +26,7 @@ class AbstractConsumer(ABC):
                 settings.TOPIC_CONSUME_EVENTS,
                 **config
             )
-            logger.info(f"Consumer: {self.consumer}")
+            logger.info(f"Consumer: {consumer.__dict__}")
             return consumer
         except Exception as e:
             logger.error(f"Error in creating consumer: {e}")
