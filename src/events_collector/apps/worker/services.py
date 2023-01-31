@@ -56,8 +56,8 @@ class JsonFormatsHandler:
                 indicator_id = indicator.id
                 self.create_matched_object(indicator_id=indicator_id)
                 stat_checked_selector.update_field(
-                    filter_data={"id": stat_checked_object.id},
-                    col="indicator_id", val=indicator_id,
+                    {"id": stat_checked_object.id},
+                    "indicator_id", indicator_id,
                     *["id"]
                 )
 
