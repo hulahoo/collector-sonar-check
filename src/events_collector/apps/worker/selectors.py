@@ -56,6 +56,7 @@ class StatCheckedProvider(BaseProvider):
             db.add(checked_object)
             db.flush()
             db.commit()
+            db.refresh(checked_object)
             return checked_object
 
 
@@ -69,6 +70,7 @@ class StatMatchedProvider(BaseProvider):
             db.add(matched_object)
             db.flush()
             db.commit()
+            db.refresh(matched_object)
             return matched_object
 
 
@@ -99,6 +101,7 @@ class DetectionsProvider(BaseProvider):
             db.add(detection)
             db.flush()
             db.commit()
+            db.refresh(detection)
             return detection
 
 

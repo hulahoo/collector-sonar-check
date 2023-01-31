@@ -1,5 +1,4 @@
 import sys
-import json
 import traceback
 
 from events_collector.config.log_conf import logger
