@@ -13,7 +13,7 @@ install_requires = [
     ('Flask', '1.1.2'),
     ('Flask-WTF', '1.0.1'),
     ('flask-cors', '3.0.10'),
-    ('prometheus-client', '0.15.0')
+    ('prometheus-client', '0.16.0')
 ]
 
 CI_PROJECT_NAME = os.environ.get("CI_PROJECT_NAME", "events-collector")
@@ -28,7 +28,7 @@ setup(
     description=CI_PROJECT_TITLE,
     url=CI_PROJECT_URL,
     install_requires=[">=".join(req) for req in install_requires],
-    python_requires=">=3.9.1",
+    python_requires=">=3.11.1",
     packages=find_packages(where="src"),
     package_dir={"": "src"},
     entry_points={

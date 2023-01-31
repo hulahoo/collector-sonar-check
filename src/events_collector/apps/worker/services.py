@@ -1,74 +1,102 @@
+import time
 import json
 from uuid import UUID
 from decimal import Decimal
+from functools import wraps
 from typing import Dict, Optional, Callable, Union
 
 from events_collector.config.log_conf import logger
 from events_collector.config.config import settings
 from events_collector.commons.enums import TYPE_LIST, TypesEnum
-from events_collector.models.models import Detections, Indicator
+from events_collector.models.models import Detections, Indicator, StatCheckedObjects
 from events_collector.apps.producer.sender import producer_entrypoint
 from events_collector.apps.worker.selectors import (
     stat_checked_selector, detections_selector, indicator_selector, stat_matched_selector
 )
 
 
-class FormatsHandler:
+def benchmark(fn):
+    @wraps(fn)
+    def with_profiling(*args, **kwargs):
+        logger.info(f"Profiling of: {fn.__name__} function")
+        start_time = time.time()
+        ret = fn(*args, **kwargs)
 
-    def json_event_matching(self, *, event: dict, source_message: str):
-        event_key: str = self.filter_event_format_type(event=event)
+        elapsed_time = time.time() - start_time
+
+        logger.info(f"{fn.__name__} finished in {elapsed_time}")
+
+        return ret
+    return with_profiling
+
+
+class JsonFormatsHandler:
+
+    def __init__(self, event: dict, source_message: str):
+        self.event = event
+        self.source_message = source_message
+
+    def event_matching(self):
+        event_key: str = self.filter_event_format_type(event=self.event)
         logger.info(f"Event key; {event_key}")
 
-        event_parent_key: dict = event.get(event_key, None)
+        event_parent_key: dict = self.event.get(event_key, None)
         logger.info(f"Event parent key; {event_parent_key}")
 
         event_type: str = event_parent_key.get(event_key, None)
         logger.info(f"Event type: {event_type}")
 
-        indicator: Optional[Indicator] = indicator_selector.get_by_type_and_value(value=event_type)
+        indicator: Optional[Indicator] = indicator_selector.get_by_value(value=event_type)
         logger.info(f"Indicator found {indicator}")
-        if indicator:
-            self.create_matched_object(indicator_id=indicator.id)
-            logger.info("Matched found. Increase matched count")
+        stat_checked_object = stat_checked_selector.create()
+        logger.info(f"Checked count increased.")
+        try:
+            if indicator:
+                logger.info("Matched found. Increase matched count")
+                indicator_id = indicator.id
+                self.create_matched_object(indicator_id=indicator_id)
+                stat_checked_selector.update_field(
+                    {"id": stat_checked_object.id},
+                    "indicator_id", indicator_id,
+                    *["id"]
+                )
 
-            detection = self.create_detection(
-                event=event,
-                source_message=source_message,
-                tags_weight=indicator.tags_weight,
-                event_key=event_key,
-                indicator_id=indicator.id,
-                indicator_weight=indicator.weight,
-                indicator_context=indicator.context,
-            )
-            logger.info(f"Created detection: {detection}")
-        else:
-            logger.info("No matched found.")
+                detection = self.create_detection(
+                    tags_weight=indicator.tags_weight,
+                    event_key=event_key,
+                    indicator_id=indicator.id,
+                    indicator_weight=indicator.weight,
+                    indicator_context=indicator.context,
+                )
+                logger.info(f"Created detection: {detection}")
+            else:
+                logger.warning("No matched found.")
+        except Exception as e:
+            logger.error(f"Error occured: {e.__class__}:{e.args}")
+
 
     def create_detection(
         self,
         *,
-        event: dict,
         event_key: str,
         indicator_id: UUID,
-        source_message: str,
         tags_weight: Decimal,
         indicator_weight: Decimal,
         indicator_context: dict,
     ) -> Detections:
         detection_event = self.create_detection_format(
-            event=event,
             event_key=event_key,
             indicator_weight=indicator_weight,
             indicator_context=indicator_context,
         )
-        source_event_json = json.dumps(event, ensure_ascii=False, default=str)
+        source_event_json = json.dumps(self.event, ensure_ascii=False, default=str)
         logger.info(f"Parsed source event: {source_event_json}")
 
-        detection_event_json = json.dumps(detection_event, ensure_ascii=False, default=str)
+        detection_event_json: str = json.dumps(detection_event, ensure_ascii=False, default=str)
         logger.info(f"Parsed detection event: {detection_event_json}")
         detection = detections_selector.create(
             source_event=source_event_json,
-            source_message=source_message,
+            source_message=self.source_message,
             indicator_weight=indicator_weight,
             tags_weight=tags_weight,
             indicator_id=indicator_id,
@@ -84,14 +112,13 @@ class FormatsHandler:
     def create_detection_format(
         self,
         *,
-        event: dict,
         event_key: str,
         indicator_weight: int,
         indicator_context: dict,
     ) -> Dict[str, Union[str, dict]]:
         detection = dict()
-        logger.info(f"Received event: {event}. Creating detection event")
-        filtered_pairs = self.get_event_values(event=event)
+        logger.info(f"Received event: {self.event}. Creating detection event")
+        filtered_pairs = self.get_event_values(event=self.event)
         logger.info(f"filtered: {filtered_pairs}")
         detection["src"] = filtered_pairs.get("src")
         detection["src_port"] = filtered_pairs.get("srcPort")
@@ -138,22 +165,25 @@ class FormatsHandler:
             except Exception as e:
                 logger.info(f"Filtering finished: {e}")
         return filtered_values
+    
+    def __call__(self, *args, **kwds):
+        self.event_matching()
 
 
 class EventsHandler:
     def __init__(self, event: dict, source_message: str):
         self.event = event
         self.source_message = source_message
-        self.format_handler = FormatsHandler()
+        self.json_format_handler = JsonFormatsHandler
 
     def choose_format(self, *, event_type: str) -> Optional[Callable]:
         formats = {
-            "JSON": self.format_handler.json_event_matching,
+            "JSON": self.json_format_handler,
         }
         return formats.get(event_type)
 
     def check_event_matching(self):
-        stat_checked_selector.create()
+        
         try:
             format_handler: Callable = self.choose_format(
                 event_type=self.event.get("format_of_feed", "JSON")
@@ -162,10 +192,8 @@ class EventsHandler:
                 logger.error("No appropriate format found")
                 return
             else:
+                match: Callable = format_handler(event=self.event, source_message=self.source_message)
                 logger.info(f"Found handler: {format_handler.__name__}")
-                format_handler(event=self.event, source_message=self.source_message)
+                match()
         except Exception as e:
             logger.error(f"Error occured: {e}")
-
-    def __call__(self):
-        self.event_matching()

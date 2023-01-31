@@ -1,10 +1,11 @@
-psycopg2-binary==2.9.5
 kafka-python==2.0.2
+pydantic==1.10.2
+psycopg2-binary==2.9.5
 stix2-elevator==4.1.7
 stix2==3.0.1
 pydantic==1.10.2
 Flask==2.1.0
 Flask-WTF==1.0.1
-prometheus-client==0.15.0
+prometheus-client==0.16.0
 sqlalchemy==1.4.44
 flask-cors==3.0.10

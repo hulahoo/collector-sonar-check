@@ -1,11 +1,15 @@
 from abc import abstractmethod, ABC
 from contextlib import contextmanager
 
-from sqlalchemy import create_engine, MetaData
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker, scoped_session
 
+
 from events_collector.config.config import settings
+
+
+Base = declarative_base()
 
 
 class Database(ABC):
@@ -28,7 +32,6 @@ class Database(ABC):
     @contextmanager
     def session(self):
         session: Session = self._session_factory()
-
         try:
             yield session
         except Exception:
@@ -49,23 +52,8 @@ class SyncPostgresDriver(Database):
         )
 
     def get_db_url(self):
-        return f"postgresql://{settings.APP_POSTGRESQL_USER}:{settings.APP_POSTGRESQL_PASSWORD}@" \
-                f"{settings.APP_POSTGRESQL_HOST}:{settings.APP_POSTGRESQL_PORT}/{settings.APP_POSTGRESQL_NAME}"
+        return f"postgresql://{settings.APP_POSTGRESQL_USER}:{settings.APP_POSTGRESQL_PASSWORD}@{settings.APP_POSTGRESQL_HOST}:{settings.APP_POSTGRESQL_PORT}/{settings.APP_POSTGRESQL_NAME}" # noqa
 
     def _init_session_factory(self):
         return scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=self._engine))
 
-    @contextmanager
-    def session(self):
-        session: Session = self._session_factory()
-        try:
-            yield session
-        except Exception:
-            session.rollback()
-            raise
-        finally:
-            session.close()
-
-
-metadata = MetaData(bind=SyncPostgresDriver()._engine)
-Base = declarative_base(metadata=metadata)
