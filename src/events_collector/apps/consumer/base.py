@@ -9,7 +9,6 @@ from events_collector.apps.consumer.abstract import AbstractConsumer
 class BaseConsumer(AbstractConsumer):
 
     def start_process(self):
-        self.create_consumer()
         self.process_handler_service()
 
     def process_handler_service(self):
