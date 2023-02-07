@@ -110,3 +110,7 @@ venv.bak/
 .vscode
 *poetry.lock*
 */static*/
+build
+*egg-info
+Dockerfile
+docker-*.yml

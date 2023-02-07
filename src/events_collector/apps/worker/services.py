@@ -8,7 +8,7 @@ from typing import Dict, Optional, Callable, Union
 from events_collector.config.log_conf import logger
 from events_collector.config.config import settings
 from events_collector.commons.enums import TYPE_LIST, TypesEnum
-from events_collector.models.models import Detections, Indicator, StatCheckedObjects
+from events_collector.models.models import Detections, Indicator
 from events_collector.apps.producer.sender import producer_entrypoint
 from events_collector.apps.worker.selectors import (
     stat_checked_selector, detections_selector, indicator_selector, stat_matched_selector
@@ -49,7 +49,7 @@ class JsonFormatsHandler:
         indicator: Optional[Indicator] = indicator_selector.get_by_value(value=event_type)
         logger.info(f"Indicator found {indicator}")
         stat_checked_object = stat_checked_selector.create()
-        logger.info(f"Checked count increased.")
+        logger.info("Checked count increased.")
         try:
             if indicator:
                 logger.info("Matched found. Increase matched count")
@@ -73,7 +73,6 @@ class JsonFormatsHandler:
                 logger.warning("No matched found.")
         except Exception as e:
             logger.error(f"Error occured: {e.__class__}:{e.args}")
-
 
     def create_detection(
         self,
@@ -165,7 +164,7 @@ class JsonFormatsHandler:
             except Exception as e:
                 logger.info(f"Filtering finished: {e}")
         return filtered_values
-    
+
     def __call__(self, *args, **kwds):
         self.event_matching()
 
@@ -183,7 +182,7 @@ class EventsHandler:
         return formats.get(event_type)
 
     def check_event_matching(self):
-        
+
         try:
             format_handler: Callable = self.choose_format(
                 event_type=self.event.get("format_of_feed", "JSON")

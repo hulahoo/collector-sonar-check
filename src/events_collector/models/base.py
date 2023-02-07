@@ -56,4 +56,3 @@ class SyncPostgresDriver(Database):
 
     def _init_session_factory(self):
         return scoped_session(sessionmaker(autocommit=False, autoflush=False, bind=self._engine))
-
