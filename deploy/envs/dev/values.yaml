@@ -30,9 +30,9 @@ env:
 
 links:
   - targetProtocol: KAFKA
-      targetInformationSystemId: threat-intelligence
-      targetKafkaTopicId: syslog
-      kafkaAdapterProperties:
-        connectionMode: consumer
+    targetInformationSystemId: threat-intelligence
+    targetKafkaTopicId: syslog
+    kafkaAdapterProperties:
+      connectionMode: consumer
 
 strategyType: Recreate
