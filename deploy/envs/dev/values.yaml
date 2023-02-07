@@ -20,7 +20,7 @@ databases:
     name: db
 
 env:
-  KAFKA_BOOTSTRAP_SERVER: adapter-ti-clusters-events-collector.isys-threat-intelligence-dev-links:9092
+  KAFKA_BOOTSTRAP_SERVER: adapter-infrastbl-kafka-events-collector.isys-threat-intelligence-dev-links:9092
   KAFKA_GROUP_ID: main
   TOPIC_CONSUME_EVENTS: syslog
   ALLOW_ANONYMOUS_LOGIN: yes
