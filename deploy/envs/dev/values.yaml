@@ -29,10 +29,10 @@ env:
   CSRF_ENABLED: False
 
 links:
-  - targetProtocol: "KAFKA"
-      targetInformationSystemId: "events-collector"
-      targetKafkaTopicId: "syslog"
+  - targetProtocol: KAFKA
+      targetInformationSystemId: threat-intelligence
+      targetKafkaTopicId: syslog
       kafkaAdapterProperties:
-        connectionMode: "consumer"
+        connectionMode: consumer
 
 strategyType: Recreate
