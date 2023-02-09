@@ -1,15 +1,18 @@
 import os
 import json
+import psutil
 
 from flask import Flask, request
-from flask_wtf.csrf import CSRFProtect
 from flask_cors import cross_origin
+from flask_wtf.csrf import CSRFProtect
+from sqlalchemy.exc import OperationalError
+from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
 
 from events_collector.config.log_conf import logger
 from events_collector.config.config import settings
+from events_collector.apps.consumer.base import BaseConsumer
+from events_collector.models.base import SyncPostgresDriver
 from events_collector.apps.worker.services import EventsHandler
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
-
 
 app = Flask(__name__)
 
@@ -36,7 +39,16 @@ def readiness():
     """
     Текущее состояние готовности сервиса
     """
-    logger.info("Readiness checking started")
+    mem = psutil.virtual_memory()
+    logger.info(f"CPU utilization percent: {psutil.cpu_percent(interval=None)}")
+    logger.info(f"Memory used percentage: {mem.percent}")
+    THRESHOLD = 100 * 1024 * 1024
+    if mem.available <= THRESHOLD:
+        return app.response_class(
+            response={"status": "DOWN"},
+            status=500,
+            mimetype=mimetype
+        )
     return app.response_class(
         response={"status": "UP"},
         status=200,
@@ -49,7 +61,25 @@ def liveness():
     """
     Возвращает информацию о работоспособности сервиса
     """
-    logger.info("Liveness checking started")
+    consumer = BaseConsumer().consumer
+    kafka_connected = consumer.bootstrap_connected()
+    db_engine = SyncPostgresDriver().engine
+    if not kafka_connected:
+        logger.info(f"Liveness checking Kafka failed. Status: {kafka_connected}")
+        return app.response_class(
+            response={"status": "DOWN"},
+            status=500,
+            mimetype=mimetype
+        )
+    try:
+        db_engine.connect()
+    except OperationalError as e:
+        logger.info(f"Liveness checking DB failed. Detail: {e.detail}")
+        return app.response_class(
+            response={"status": "DOWN"},
+            status=500,
+            mimetype=mimetype
+        )
     return app.response_class(
         response={"status": "UP"},
         status=200,

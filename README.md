@@ -22,6 +22,8 @@ APP_POSTGRESQL_HOST=localhost
 APP_POSTGRESQL_PORT=5432
 CSRF_ENABLED=True
 SESSION_COOKIE_SECURE=True
+CONFIG_DIRECTORY=config/directory
+CONFIG_FILE=path/file
 ```
 
 ### Локальный запуск

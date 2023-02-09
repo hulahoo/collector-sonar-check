@@ -23,10 +23,10 @@ env:
   KAFKA_BOOTSTRAP_SERVER: adapter-threat-intelligence-ti-cluster-events-collector.isys-threat-intelligence-dev-links:9092
   KAFKA_GROUP_ID: main
   TOPIC_CONSUME_EVENTS: syslog
-  ALLOW_ANONYMOUS_LOGIN: yes
-  ALLOW_PLAINTEXT_LISTENER: yes
   SESSION_COOKIE_SECURE: False
   CSRF_ENABLED: False
+  CONFIG_DIRECTORY: config/
+  CONFIG_FILE: config.ini
 
 links:
   - targetProtocol: KAFKA

@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     TOPIC_TO_EXPORT_EVENTS: str = "collector"
     CSRF_ENABLED: bool = True
     SESSION_COOKIE_SECURE: bool = True
+    CONFIG_FILE: str = ""
+    CONFIG_DIRECTORY: str = ""
 
     APP_POSTGRESQL_HOST: str
     APP_POSTGRESQL_PASSWORD: str

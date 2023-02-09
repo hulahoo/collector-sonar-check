@@ -2,6 +2,7 @@ from abc import abstractmethod, ABC
 from contextlib import contextmanager
 
 from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import Session, sessionmaker, scoped_session
 
@@ -14,7 +15,7 @@ Base = declarative_base()
 
 class Database(ABC):
     def __init__(self) -> None:
-        self._engine = self._create_engine()
+        self._engine: Engine = self._create_engine()
         self._session_factory = self._init_session_factory()
 
     @abstractmethod
@@ -39,6 +40,10 @@ class Database(ABC):
             raise
         finally:
             session.close()
+
+    @property
+    def engine(self):
+        return self._engine
 
 
 class SyncPostgresDriver(Database):
